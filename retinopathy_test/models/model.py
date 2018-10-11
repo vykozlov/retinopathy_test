@@ -5,6 +5,8 @@ Model description
 import pkg_resources
 # import project config.py
 import retinopathy_test.config as cfg
+import run_prediction
+import os
 
 def get_metadata():
 
@@ -29,18 +31,27 @@ def get_metadata():
 
     return meta
 
-def predict_file(*args):
+def predict_file(img_path, *args):
     """
     Function to make prediction on a local file
     """
+    print image_path
+    model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
+    run_prediction.predict_image(model_dir,img_path)
     message = 'Not implemented in the model (predict_file)'
     return message
 
 
-def predict_data(*args):
+def predict_data(img_path,*args):
     """
     Function to make prediction on an uploaded file
     """
+        print image_path
+    model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
+    run_prediction.predict_image(model_dir,img_path)
+    message = 'Not implemented in the model (predict_file)'
+    return message
+
     message = 'Not implemented in the model (predict_data)'
     return message
 

@@ -5,7 +5,7 @@ Model description
 import pkg_resources
 # import project config.py
 import retinopathy_test.config as cfg
-# import run_prediction #ki: comment out to avoid tensorflow import
+import run_prediction #ki: comment out to avoid tensorflow import
 import os
 
 def get_metadata():
@@ -46,7 +46,7 @@ def predict_data(img_path,*args):
     """
     Function to make prediction on an uploaded file
     """
-    print (img_path)
+    #print (img_path)
     #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     #run_prediction.predict_image(model_dir,img_path)
     

@@ -5,7 +5,7 @@ Model description
 import pkg_resources
 # import project config.py
 import retinopathy_test.config as cfg
-# import run_prediction #ki: comment out to avoid tensorflow import
+import run_prediction #ki: comment out to avoid tensorflow import
 import os
 
 def get_metadata():

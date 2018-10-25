@@ -16,6 +16,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
          git \
          curl \
          wget \
+         libsm6 \
+         libxext6 \
          python-setuptools \
          python-pip \
          python-wheel && \ 

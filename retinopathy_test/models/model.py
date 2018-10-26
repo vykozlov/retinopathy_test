@@ -47,7 +47,7 @@ def predict_data(img_path,*args):
     Function to make prediction on an uploaded file
     """
     #print (img_path)
-    #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
+    model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     #run_prediction.predict_image(model_dir,img_path)
     
     message = 'Not implemented in the model (predict_data hello!)'

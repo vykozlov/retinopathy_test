@@ -53,7 +53,7 @@ def predict_data(img_path,*args):
     #run_prediction.predict_image(model_dir,img_path)
     
     message = 'Not implemented in the model (predict_data hello!)'
-    return model_dir #runpred.predict_image(model_dir,img_path)
+    return runpred.predict_image(model_dir,img_path)
 
 
 def predict_url(*args):

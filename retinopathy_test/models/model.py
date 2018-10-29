@@ -7,6 +7,7 @@ import pkg_resources
 import retinopathy_test.config as cfg
 import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
 import os
+import tempfile
 
 def get_metadata():
 
@@ -35,28 +36,52 @@ def predict_file(img_path, *args):
     """
     Function to make prediction on a local file
     """
-    #print image_path
-    #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
+    print (image_path)
+    model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     #runpred.predict_image(model_dir,img_path)
-    print(img_path)
-    message = 'Not implemented in the model (predict_file)'
+    
+    message = 'Not implemented in the model (predict_file, yoohoo!)'
     return message
 
 
-def predict_data(img_path,*args):
+def predict_data(img,*args):
     """
     Function to make prediction on an uploaded file
     """
+    if not isinstance(img, list):
+        img = [img]
+    
+    filenames = []
+            
+    for image in img:
+        f = tempfile.NamedTemporaryFile(delete=False)
+        f.write(image)
+        f.close()
+        filenames.append(f.name)
+        print("tmp file: ", f.name)
+
+    prediction = []
+    try:
+        for imgfile in filenames:
+            prediction.append(predict_file(imgfile))
+    except Exception as e:
+        raise e
+    finally:
+        for imgfile in filenames:
+            os.remove(imgfile)
+
+    return prediction
+
     #print (img_path)
     #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
-    model_dir = os.path.join('.','retinopathy_serve')
-    model_dir+='/'
+    #model_dir = os.path.join('.','retinopathy_serve')
+    #model_dir+='/'
     
-    print(model_dir)
+    #print(model_dir)
     #run_prediction.predict_image(model_dir,img_path)
     
-    message = 'Not implemented in the model (predict_data hello!)'
-    return runpred.predict_image(model_dir,img_path)
+    #message = 'Not implemented in the model (predict_data hello!)'
+    #return runpred.predict_image(model_dir,img_path)
 
 
 def predict_url(*args):

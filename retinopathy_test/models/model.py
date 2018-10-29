@@ -36,7 +36,7 @@ def predict_file(img_path, *args):
     """
     Function to make prediction on a local file
     """
-    print (image_path)
+    print (img_path)
     model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     #runpred.predict_image(model_dir,img_path)
     

@@ -50,6 +50,7 @@ def predict_data(img_path,*args):
     #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     model_dir = os.path.join('.','retinopathy_serve')
     model_dir+='/'
+    print(img_path)
     print(model_dir)
     #run_prediction.predict_image(model_dir,img_path)
     

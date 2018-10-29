@@ -38,7 +38,7 @@ def predict_file(img_path, *args):
     """
     print (img_path)
     model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
-    #runpred.predict_image(model_dir,img_path)
+    runpred.predict_image(model_dir,img_path)
     
     message = 'Not implemented in the model (predict_file, yoohoo!)'
     return message

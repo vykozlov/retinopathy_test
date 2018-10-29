@@ -51,7 +51,7 @@ def predict_data(img,*args):
     """
     if not isinstance(img, list):
         img = [img]
-   print (img) 
+    print (img) 
     filenames = []
             
     for image in img:

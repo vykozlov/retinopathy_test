@@ -26,7 +26,8 @@ def load_image(addr, img_size):
 
 def predict_image(model_dir, image_file): #ki: this is the main function performing prediction
     # f = glob.glob(model_dir + '*/')[0] #ki: get the model parameters from the first subdirectory in model_dir
-    f = glob.glob(model_dir + '1540408813/')[0] #ki: directory 1540408813 contains model parameters for cpu only machine
+    # f = glob.glob(model_dir + '1540408813/')[0] #ki: directory 1540408813 contains model parameters for cpu only machine
+    f = glob.glob(os.path.join(model_dir,'1540408813'))[0]
     print (f)
     imgs = image_file.split(',')
     predictor_fn = tf.contrib.predictor.from_saved_model(export_dir = f, signature_def_key='predict')#ki: create predictor function using the graph and model parameters

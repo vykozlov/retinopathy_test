@@ -31,10 +31,13 @@ def predict_image(model_dir, image_file): #ki: this is the main function perform
     print (f)
     imgs = image_file.split(',')
     predictor_fn = tf.contrib.predictor.from_saved_model(export_dir = f, signature_def_key='predict')#ki: create predictor function using the graph and model parameters
+    results={}
     for imgfile in imgs:
         img = load_image(imgfile, 256)
         output = predictor_fn({'input': img})
         print(imgfile, output)
+        results['%s'%imgfile]=output
+    return results
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser() #ki: create command line parser to get model parameters and image files.
@@ -54,4 +57,4 @@ if __name__ == '__main__':
         help='Absolute path to image file.'
     )    
     args = parser.parse_args()
-    predict_image(args.model_dir, args.image_file)#ki: take the model parameter and input images and return predicted class (probabilities)
+    results = predict_image(args.model_dir, args.image_file)#ki: take the model parameter and input images and return predicted class (probabilities)

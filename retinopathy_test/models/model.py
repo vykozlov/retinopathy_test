@@ -67,7 +67,7 @@ def predict_data(img,*args):
     prediction = []
     try:
         for imgfile in filenames:
-            prediction.append(predict_file(imgfile))
+            prediction.append(str(predict_file(imgfile)))
     except Exception as e:
         raise e
     finally:

@@ -3,6 +3,11 @@ Retinopathy
 
 Retinopathy classification using Tensorflow
 
+This repository contains a partial copy of the following repository of Niklas Köhler for use in the DEEP-Hybrid-DataCloud project: https://gitlab.com/niklaskoehler/retinopathy_model
+
+The directories and files were created using cookiecutter given at
+https://github.com/indigo-dc/cookiecutter-data-science
+
 Project Organization
 ------------
 

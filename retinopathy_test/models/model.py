@@ -106,7 +106,7 @@ def train(*args):
     Train network
     """
     # from deep-nextcloud into the container
-    data_origin = 'deep-nextcloud:/records/retinopathy_*_short.tfrecords'
+    data_origin = 'deepnc:/records/'
     data_copy = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'dataset','records')

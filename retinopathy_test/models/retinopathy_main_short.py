@@ -25,8 +25,8 @@ from absl import app as absl_app #ki: absl is Google's common libraries
 from absl import flags
 import tensorflow as tf  # pylint: disable=g-bad-import-order
 
-from retinopathy_test.models.models_master.official.utils.flags import core as flags_core
-from retinopathy_test.models.models_master.official.utils.logs import logger
+from official.utils.flags import core as flags_core
+from official.utils.logs import logger
 import retinopathy_test.models.resnet_model as resnet_model
 import retinopathy_test.models.resnet_run_loop as resnet_run_loop
 
@@ -237,7 +237,7 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
   )
 
 
-def define_retinopathy_flags():
+def define_retinopathy_flags(FLAGS):
   resnet_run_loop.define_resnet_flags()
   flags.adopt_module_key_flags(resnet_run_loop)
   #flags_core.set_defaults(data_dir='./records/',
@@ -286,9 +286,16 @@ def run_retinopathy(flags_obj):
       shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS]) 
 
 
-def main(_):
+def main(FLAGS):
+  #flags.FLAGS.unparse_flags()
+  #FLAGS = flags.FLAGS
+  #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
   with logger.benchmark_context(flags.FLAGS):
     run_retinopathy(flags.FLAGS)
+  #with logger.benchmark_context(FLAGS):
+    #run_retinopathy(FLAGS)
+  
+
 
 
 if __name__ == '__main__':

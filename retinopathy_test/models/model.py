@@ -10,8 +10,12 @@ import os
 import tempfile
 import retinopathy_test.models.retinopathy_main_short as retimain
 # import retinopathy_test.models.models-master.official as official
+from absl import flags
 from absl import app as absl_app
+
 import tensorflow as tf
+#from official.utils.flags import core as flags_core
+
 import subprocess
 
 def get_metadata():
@@ -114,9 +118,16 @@ def train(*args):
     
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
-
+    print(error)
+    FLAGS=flags.FLAGS
+    flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
+    #flags.FLAGS.unparse_flags()
+    for name in list(FLAGS):
+        print (name)
+        #if name == 'listen-ip':
+            #delattr(flags.FLAGS, name)
     tf.logging.set_verbosity(tf.logging.INFO)
-    retimain.define_retinopathy_flags()
+    retimain.define_retinopathy_flags(FLAGS)
     absl_app.run(retimain.main)
    
     message = 'Not implemented in the model (train)'
@@ -132,4 +143,5 @@ def get_train_args():
     #...
     #}
     args = {}
+    
     return args

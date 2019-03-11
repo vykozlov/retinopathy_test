@@ -237,7 +237,7 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
   )
 
 
-def define_retinopathy_flags(FLAGS):
+def define_retinopathy_flags():#FLAGS
   resnet_run_loop.define_resnet_flags()
   flags.adopt_module_key_flags(resnet_run_loop)
   #flags_core.set_defaults(data_dir='./records/',
@@ -254,13 +254,13 @@ def define_retinopathy_flags(FLAGS):
                               'retinopathy_test',
                               'models','retinopathy_model'),
                           resnet_size='50',
-                          train_epochs=10,
-                          epochs_between_evals=5,
+                          train_epochs=2, #10
+                          epochs_between_evals=1, #5
                           batch_size=1,
                           export_dir= os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'models','retinopathy_serve_short'))
-
+  
 #def define_retinopathy_flags():
   #resnet_run_loop.define_resnet_flags()
   #flags.adopt_module_key_flags(resnet_run_loop)
@@ -286,14 +286,51 @@ def run_retinopathy(flags_obj):
       shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS]) 
 
 
-def main(FLAGS):
-  #flags.FLAGS.unparse_flags()
-  #FLAGS = flags.FLAGS
-  #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
+def main(_):#FLAGS
+  #pass
   with logger.benchmark_context(flags.FLAGS):
+      #pass
     run_retinopathy(flags.FLAGS)
-  #with logger.benchmark_context(FLAGS):
-    #run_retinopathy(FLAGS)
+  #for name in list(flags.FLAGS):
+    ##print(name)
+    #if name == 'listen-ip':
+      #delattr(flags.FLAGS, name)
+    #if name == 'data_dir':
+      #delattr(flags.FLAGS, name)
+    #if name == 'dd':
+      #delattr(flags.FLAGS, name)
+    #if name == 'model_dir':
+      #delattr(flags.FLAGS, name)
+    #if name == 'resnet_size':
+      #delattr(flags.FLAGS, name)
+    #if name == 'train_epochs':
+      #delattr(flags.FLAGS, name)
+    #if name == 'epochs_between_evals':
+      #delattr(flags.FLAGS, name)
+    #if name == 'batch_size':
+      #delattr(flags.FLAGS, name)
+    #if name == 'export_dir':
+      #delattr(flags.FLAGS, name)
+    #if name == 'md':
+      #delattr(flags.FLAGS, name)
+    #if name == 'te':
+      #delattr(flags.FLAGS, name)
+    #if name == 'clean':
+      #delattr(flags.FLAGS, name)
+    #if name == 'ebe':
+      #delattr(flags.FLAGS, name)
+    #if name == 'stop_threshold':
+      #delattr(flags.FLAGS, name)
+    #if name == 'st':
+      #delattr(flags.FLAGS, name)
+    #if name == 'bs':
+      #delattr(flags.FLAGS, name)
+    #if name == 'num_gpus':
+      #delattr(flags.FLAGS, name)
+    #if name == 'ng':
+      #delattr(flags.FLAGS, name)
+  #for name in list(flags.FLAGS):
+    #print(name)
   
 
 
@@ -302,4 +339,5 @@ if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)
   define_retinopathy_flags()
   absl_app.run(main)
+
 

@@ -114,23 +114,38 @@ def train(*args):
     data_copy = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'dataset','records')
-    command = (['rclone', 'copy', data_origin, data_copy])
-    
+    command = (['rclone', 'copy', data_origin, data_copy])    
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
     print(error)
-    FLAGS=flags.FLAGS
-    flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
+    #FLAGS=flags.FLAGS
+    #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()
-    for name in list(FLAGS):
-        print (name)
+    #for name in list(FLAGS):
+        #print (name)
         #if name == 'listen-ip':
             #delattr(flags.FLAGS, name)
     tf.logging.set_verbosity(tf.logging.INFO)
-    retimain.define_retinopathy_flags(FLAGS)
-    absl_app.run(retimain.main)
-   
-    message = 'Not implemented in the model (train)'
+    #retimain.define_retinopathy_flags()#FLAGS
+    #absl_app.run(retimain.main)
+    #retimain.main(flags)
+    training_script=os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models','retinopathy_main_short.py')
+    print(training_script)
+    code = subprocess.call(["python", training_script])
+    print(code)
+    data_origin = os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models','retinopathy_serve_short')
+    data_copy = 'deepnc:/retinopathy_serve_short/'
+    command = (['rclone', 'copy', data_origin, data_copy])
+    result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = result.communicate()
+    print(error)
+
+    #message = 'Not implemented in the model (train)'
+    message = 'Training finished!'
     return message
 
 def get_train_args():

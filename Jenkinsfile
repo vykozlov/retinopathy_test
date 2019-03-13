@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 
-@Library(['github.com/indigo-dc/jenkins-pipeline-library']) _
+@Library(['github.com/indigo-dc/jenkins-pipeline-library@1.2.3']) _
 
 def job_result_url = ''
 
@@ -13,7 +13,7 @@ pipeline {
         author_name = "HMGU"
         author_email = "itokeiic@gmail.com"
         app_name = "retinopathy_test"
-        job_location = "Pipeline-as-code/DEEP-OC-org/DEEP-OC-retinopathy_test/master"
+        job_location = "Pipeline-as-code/DEEP-OC-org/DEEP-OC-retinopathy_test/${env.BRANCH_NAME}"
     }
 
     stages {
@@ -60,6 +60,13 @@ pipeline {
         }
 
         stage("Re-build DEEP-OC-retinopathy_test Docker image") {
+            when {
+                anyOf {
+                   branch 'master'
+                   branch 'test'
+                   buildingTag()
+               }
+            }
             steps {
                 script {
                     def job_result = JenkinsBuildJob("${env.job_location}")
@@ -87,7 +94,7 @@ ${build_status}: Job '${env.JOB_NAME}\
 
                 def body = """
 Dear ${author_name},\n\n
-A new build of '${app_name} DEEP application is available in Jenkins at:\n\n
+A new build of '${app_name} (${env.BRANCH_NAME})' DEEP application is available in Jenkins at:\n\n
 *  ${env.BUILD_URL}\n\n
 terminated with '${build_status}' status.\n\n
 Check console output at:\n\n

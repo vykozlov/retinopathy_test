@@ -110,7 +110,8 @@ def train(*args):
     Train network
     """
     # from deep-nextcloud into the container
-    data_origin = 'deepnc:/records_short/'
+    # data_origin = 'deepnc:/records_short/'
+    data_origin = 'deepnc:/records/'
     data_copy = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'dataset','records')
@@ -129,16 +130,29 @@ def train(*args):
     #retimain.define_retinopathy_flags()#FLAGS
     #absl_app.run(retimain.main)
     #retimain.main(flags)
+    #training_script=os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models',
+                              'retinopathy_main_short.py')
     training_script=os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
-                              'models','retinopathy_main_short.py')
+                              'models',
+                              'retinopathy_main.py')
+
     print(training_script)
     code = subprocess.call(["python", training_script])
     print(code)
+    #data_origin = os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models',
+                              'retinopathy_serve_short')
+    #data_copy = 'deepnc:/retinopathy_serve_short/'
     data_origin = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
-                              'models','retinopathy_serve_short')
-    data_copy = 'deepnc:/retinopathy_serve_short/'
+                              'models',
+                              'retinopathy_serve_update')
+    data_copy = 'deepnc:/retinopathy_serve_update/'
+
     command = (['rclone', 'copy', data_origin, data_copy])
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()

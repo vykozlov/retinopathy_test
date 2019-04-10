@@ -20,14 +20,15 @@ from __future__ import print_function
 
 import os
 import math
+import retinopathy_test.config as cfg
 from absl import app as absl_app #ki: absl is Google's common libraries
 from absl import flags
 import tensorflow as tf  # pylint: disable=g-bad-import-order
 
 from official.utils.flags import core as flags_core
 from official.utils.logs import logger
-import resnet_model
-import resnet_run_loop
+import retinopathy_test.models.resnet_model as resnet_model
+import retinopathy_test.models.resnet_run_loop as resnet_run_loop
 
 _HEIGHT = 256
 _WIDTH = 256
@@ -239,13 +240,26 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
 def define_retinopathy_flags():
   resnet_run_loop.define_resnet_flags()
   flags.adopt_module_key_flags(resnet_run_loop)
-  flags_core.set_defaults(data_dir='./records/',
-                          model_dir='./retinopathy_model/',
+  #flags_core.set_defaults(data_dir='./records/',
+                          #model_dir='./retinopathy_model/',
+                          #resnet_size='50',
+                          #train_epochs=10,
+                          #epochs_between_evals=5,
+                          #batch_size=1,
+                          #export_dir='./retinopathy_serve/')
+  flags_core.set_defaults(data_dir=os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'dataset','records'),
+                          model_dir = os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models','retinopathy_model'),
                           resnet_size='50',
-                          train_epochs=10,
-                          epochs_between_evals=5,
+                          train_epochs=2, #10
+                          epochs_between_evals=1, #5
                           batch_size=1,
-                          export_dir='./retinopathy_serve/')
+                          export_dir= os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models','retinopathy_serve_update'))
 
 
 def run_retinopathy(flags_obj):

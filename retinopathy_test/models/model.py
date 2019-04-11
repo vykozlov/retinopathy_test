@@ -131,9 +131,9 @@ def train(*args):
     #absl_app.run(retimain.main)
     #retimain.main(flags)
     #training_script=os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models',
-                              'retinopathy_main_short.py')
+                              #'retinopathy_test',
+                              #'models',
+                              #'retinopathy_main_short.py')
     training_script=os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'models',
@@ -143,9 +143,9 @@ def train(*args):
     code = subprocess.call(["python", training_script])
     print(code)
     #data_origin = os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models',
-                              'retinopathy_serve_short')
+                              #'retinopathy_test',
+                              #'models',
+                              #'retinopathy_serve_short')
     #data_copy = 'deepnc:/retinopathy_serve_short/'
     data_origin = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',

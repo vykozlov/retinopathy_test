@@ -254,8 +254,8 @@ def define_retinopathy_flags():
                               'retinopathy_test',
                               'models','retinopathy_model'),
                           resnet_size='50',
-                          train_epochs=2, #10
-                          epochs_between_evals=1, #5
+                          train_epochs=10, #10
+                          epochs_between_evals=5, #5
                           batch_size=1,
                           export_dir= os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',

@@ -8,7 +8,7 @@ import retinopathy_test.config as cfg
 import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
 import os
 import tempfile
-import retinopathy_test.models.retinopathy_main_short as retimain
+import retinopathy_test.models.retinopathy_main as retimain
 # import retinopathy_test.models.models-master.official as official
 from absl import flags
 from absl import app as absl_app

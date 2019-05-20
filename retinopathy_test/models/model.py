@@ -150,8 +150,8 @@ def train(*args):
     data_origin = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'models',
-                              'retinopathy_serve_update')
-    data_copy = 'deepnc:/retinopathy_serve_update/'
+                              'retinopathy_serve')
+    data_copy = 'deepnc:/retinopathy_serve/'
 
     command = (['rclone', 'copy', data_origin, data_copy])
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

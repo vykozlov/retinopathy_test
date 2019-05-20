@@ -259,7 +259,7 @@ def define_retinopathy_flags():
                           batch_size=1,
                           export_dir= os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
-                              'models','retinopathy_serve_update'))
+                              'models','retinopathy_serve'))
 
 
 def run_retinopathy(flags_obj):

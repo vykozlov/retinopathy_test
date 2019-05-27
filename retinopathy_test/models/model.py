@@ -17,6 +17,7 @@ import tensorflow as tf
 #from official.utils.flags import core as flags_core
 
 import subprocess
+import time
 
 def get_metadata():
 
@@ -142,6 +143,7 @@ def train(*args):
     print(training_script)
     code = subprocess.call(["python", training_script])
     print(code)
+    time.sleep(60)
     #data_origin = os.path.join(cfg.BASE_DIR,
                               #'retinopathy_test',
                               #'models',
@@ -152,7 +154,7 @@ def train(*args):
                               'models',
                               'retinopathy_serve')
     data_copy = 'deepnc:/retinopathy_serve/'
-
+    
     command = (['rclone', 'copy', data_origin, data_copy])
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()

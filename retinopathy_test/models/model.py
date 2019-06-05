@@ -112,6 +112,7 @@ def train(*args):
     """
     # from deep-nextcloud into the container
     # data_origin = 'rshare:/records_short/'
+    e1=time.time()
     data_origin = 'rshare:/records/'
     data_copy = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
@@ -120,6 +121,7 @@ def train(*args):
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
     print(error)
+    download_time=time.time()-e1
     #FLAGS=flags.FLAGS
     #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()
@@ -128,6 +130,7 @@ def train(*args):
         #if name == 'listen-ip':
             #delattr(flags.FLAGS, name)
     tf.logging.set_verbosity(tf.logging.INFO)
+    e2=time.time()
     #retimain.define_retinopathy_flags()#FLAGS
     #absl_app.run(retimain.main)
     #retimain.main(flags)
@@ -143,7 +146,9 @@ def train(*args):
     print(training_script)
     code = subprocess.call(["python", training_script])
     print(code)
+    training_time=time.time()-e2
     time.sleep(60)
+    e3=time.time()
     #data_origin = os.path.join(cfg.BASE_DIR,
                               #'retinopathy_test',
                               #'models',
@@ -159,9 +164,10 @@ def train(*args):
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
     print(error)
+    upload_time=time.time()-e3
 
     #message = 'Not implemented in the model (train)'
-    message = 'Training finished!'
+    message = 'Training finished! download time: %f, training time: %f, upload time: %f'%(download_time,training_time,upload_time)
     return message
 
 def get_train_args():

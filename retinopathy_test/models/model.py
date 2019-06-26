@@ -111,9 +111,9 @@ def train(*args):
     Train network
     """
     # from deep-nextcloud into the container
-    # data_origin = 'rshare:/records_short/'
+    # data_origin = 'deepnc:/records_short/'
     e1=time.time()
-    data_origin = 'rshare:/records/'
+    data_origin = 'deepnc:/records/'
     data_copy = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'dataset','records')
@@ -158,7 +158,7 @@ def train(*args):
                               'retinopathy_test',
                               'models',
                               'retinopathy_serve')
-    data_copy = 'rshare:/retinopathy_serve/'
+    data_copy = 'deepnc:/retinopathy_serve/'
     
     command = (['rclone', 'copy', data_origin, data_copy])
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

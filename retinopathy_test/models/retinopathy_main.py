@@ -40,8 +40,8 @@ _NUM_CLASSES = 5
 _NUM_DATA_FILES = 1
 
 _NUM_IMAGES = {
-    'train': 1000, #28101,
-    'validation': 400, #7025,
+    'train': 28101, #28101,
+    'validation': 7025, #7025,
 }
 
 DATASET_NAME = 'RETINOPATHY'

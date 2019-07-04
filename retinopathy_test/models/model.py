@@ -122,6 +122,7 @@ def train(*args):
     output, error = result.communicate()
     print(error)
     download_time=time.time()-e1
+    time.sleep(60)
     #FLAGS=flags.FLAGS
     #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()

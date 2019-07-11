@@ -105,6 +105,24 @@ def predict_url(*args):
     message = 'Not implemented in the model (predict_url)'
     return message
 
+def convert_bytes(num):
+    """
+    this function will convert bytes to MB.... GB... etc
+    """
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
+
+
+def file_size(file_path):
+    """
+    this function will return the file size
+    """
+    if os.path.isfile(file_path):
+        file_info = os.stat(file_path)
+        return convert_bytes(file_info.st_size)
+
 
 def train(*args):
     """
@@ -123,6 +141,7 @@ def train(*args):
     print(error)
     download_time=time.time()-e1
     time.sleep(60)
+ 
     #FLAGS=flags.FLAGS
     #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()
@@ -166,9 +185,11 @@ def train(*args):
     output, error = result.communicate()
     print(error)
     upload_time=time.time()-e3
-
+    training_data_path = os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'dataset','records','retinopathy_tr.tfrecords')
     #message = 'Not implemented in the model (train)'
-    message = 'Training finished! download time: %f, training time: %f, upload time: %f'%(download_time,training_time,upload_time)
+    message = 'Training finished! download time: %f, training time: %f, upload time: %f \n Training file size: %s'%(download_time,training_time,upload_time,file_size(training_data_path))
     return message
 
 def get_train_args():

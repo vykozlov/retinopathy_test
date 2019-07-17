@@ -189,7 +189,7 @@ def train(*args):
                               'retinopathy_test',
                               'dataset','records','retinopathy_tr.tfrecords')
     #message = 'Not implemented in the model (train)'
-    message = 'Training finished! download time: %f, training time: %f, upload time: %f \n Training file size: %s'%(download_time,training_time,upload_time,file_size(training_data_path))
+    message = 'Training finished! download time: %f, training time: %f, upload time: %f, training file size: %s'%(download_time,training_time,upload_time,file_size(training_data_path))
     return message
 
 def get_train_args():

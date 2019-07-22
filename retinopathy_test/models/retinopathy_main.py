@@ -112,7 +112,7 @@ def input_fn(is_training, data_dir, batch_size, num_epochs=1, num_gpus=None):
       dataset=dataset,
       is_training=is_training,
       batch_size=batch_size,
-      shuffle_buffer=_NUM_IMAGES['train']//16, #ki: originally set to 2
+      shuffle_buffer=_NUM_IMAGES['train']//64, #ki: originally set to 2
       parse_record_fn=parse_record,
       num_epochs=num_epochs,
       num_gpus=num_gpus,

@@ -15,7 +15,7 @@ from absl import app as absl_app
 
 import tensorflow as tf
 #from official.utils.flags import core as flags_core
-
+import deepaas
 import subprocess
 import time
 
@@ -58,21 +58,35 @@ def predict_file(img_path, *args):
     return results
 
 
-def predict_data(img,*args):
+def predict_data(*args, **kwargs):
     """
     Function to make prediction on an uploaded file
     """
-    if not isinstance(img, list):
-        img = [img]
-    # print (img) 
+    deepaas_vers_cut = '0.4.0'
+    img = []
     filenames = []
+    
+    deepaas_ver = deepaas.__version__
+    print("[INFO] deepaas_version: %s" % deepaas_ver)
+    if parse_version(deepaas_ver) > parse_version(deepaas_ver_cut):
+        for arg in args:
+            filenames.append(arg.files)
+            # network = yaml.safe_load(arg.network)
+    else:
+        # Implementation used with DEEPaaS API <=0.4.0
+        img = args[0]
+    
+        if not isinstance(img, list):
+            img = [img]
+        # print (img) 
+        filenames = []
             
-    for image in img:
-        f = tempfile.NamedTemporaryFile(delete=False)
-        f.write(image)
-        f.close()
-        filenames.append(f.name)
-        print("tmp file: ", f.name)
+        for image in img:
+            f = tempfile.NamedTemporaryFile(delete=False)
+            f.write(image)
+            f.close()
+            filenames.append(f.name)
+            print("tmp file: ", f.name)
 
     prediction = []
     try:
@@ -204,3 +218,7 @@ def get_train_args():
     args = {}
     
     return args
+
+def get_test_args():
+    test_args={}
+    return test_args

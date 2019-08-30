@@ -16,6 +16,7 @@ from absl import app as absl_app
 import tensorflow as tf
 #from official.utils.flags import core as flags_core
 import deepaas
+from pkg_resources import parse_version
 import subprocess
 import time
 
@@ -46,14 +47,14 @@ def predict_file(img_path, *args):
     """
     Function to make prediction on a local file
     """
-    #print (img_path)
+    print ('image_path: ',img_path)
     #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     model_dir = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',
                               'models','retinopathy_serve')
     print (model_dir)
     results=runpred.predict_image(model_dir,img_path)
-    
+    print ('[DEBUG] results: %s'%results)
     message = 'Not implemented in the model (predict_file, yoohoo!)'
     return results
 
@@ -62,14 +63,20 @@ def predict_data(*args, **kwargs):
     """
     Function to make prediction on an uploaded file
     """
-    deepaas_vers_cut = '0.4.0'
+    deepaas_ver_cut = '0.4.0'
     img = []
     filenames = []
     
     deepaas_ver = deepaas.__version__
     print("[INFO] deepaas_version: %s" % deepaas_ver)
     if parse_version(deepaas_ver) > parse_version(deepaas_ver_cut):
+        print('[DEBUG] predict_file - args: %s' % args)
+        print('[DEBUG] predict_file - kwargs: %s' % kwargs)
         for arg in args:
+            print("[DEBUG] arg: ", arg)
+            print("[DEBUG] type of arg: ", type(arg))
+            print("[DEBUG] files_type: ", (type(arg.files)))     
+            # print("[DEBUG] files.read(): ",arg.files.read())
             filenames.append(arg.files)
             # network = yaml.safe_load(arg.network)
     else:
@@ -79,7 +86,7 @@ def predict_data(*args, **kwargs):
         if not isinstance(img, list):
             img = [img]
         # print (img) 
-        filenames = []
+        # filenames = []
             
         for image in img:
             f = tempfile.NamedTemporaryFile(delete=False)
@@ -92,11 +99,13 @@ def predict_data(*args, **kwargs):
     try:
         for imgfile in filenames:
             prediction.append(str(predict_file(imgfile)))
+            print("image: ", imgfile)
     except Exception as e:
         raise e
     finally:
-        for imgfile in filenames:
-            os.remove(imgfile)
+        if parse_version(deepaas_ver) <= parse_version(deepaas_ver_cut):
+            for imgfile in filenames:
+                os.remove(imgfile)
 
     return prediction
 
@@ -220,5 +229,6 @@ def get_train_args():
     return args
 
 def get_test_args():
-    test_args={}
+    test_args={
+        }
     return test_args

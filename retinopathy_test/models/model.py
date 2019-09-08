@@ -84,8 +84,8 @@ def predict_data(*args, **kwargs):
             
     for image in imgs:
         if deepaas_ver >= deepaas_ver_cut:
-            f = open("/tmp/%s" % image.filename, "w+")
-            image.save(f.name)
+            f = open("/tmp/%s" % image[0].filename, "w+")
+            image[0].save(f.name)
         else:
             f = tempfile.NamedTemporaryFile(delete=False)
             f.write(image)

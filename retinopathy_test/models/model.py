@@ -63,37 +63,36 @@ def predict_data(*args, **kwargs):
     """
     Function to make prediction on an uploaded file
     """
-    deepaas_ver_cut = '0.4.0'
-    img = []
+    deepaas_ver_cut = parse_version('0.5.0')
+    imgs = []
     filenames = []
     
-    deepaas_ver = deepaas.__version__
+    deepaas_ver = parse_version(deepaas.__version__)
     print("[INFO] deepaas_version: %s" % deepaas_ver)
-    if parse_version(deepaas_ver) > parse_version(deepaas_ver_cut):
-        print('[DEBUG] predict_file - args: %s' % args)
-        print('[DEBUG] predict_file - kwargs: %s' % kwargs)
+    predict_debug = False
+    if predict_debug:
+        print('[DEBUG] predict_data - args: %s' % args)
+        print('[DEBUG] predict_data - kwargs: %s' % kwargs)
+    if deepaas_ver >= deepaas_ver_cut:
         for arg in args:
-            print("[DEBUG] arg: ", arg)
-            print("[DEBUG] type of arg: ", type(arg))
-            print("[DEBUG] files_type: ", (type(arg.files)))     
-            # print("[DEBUG] files.read(): ",arg.files.read())
-            filenames.append(arg.files)
-            # network = yaml.safe_load(arg.network)
+            imgs.append(arg['files'])
     else:
-        # Implementation used with DEEPaaS API <=0.4.0
-        img = args[0]
-    
-        if not isinstance(img, list):
-            img = [img]
-        # print (img) 
-        # filenames = []
+        imgs = args[0]
+
+    if not isinstance(imgs, list):
+        imgs = [imgs]
             
-        for image in img:
+    for image in imgs:
+        if deepaas_ver >= deepaas_ver_cut:
+            f = open("/tmp/%s" % image.filename, "w+")
+            image.save(f.name)
+        else:
             f = tempfile.NamedTemporaryFile(delete=False)
             f.write(image)
-            f.close()
-            filenames.append(f.name)
-            print("tmp file: ", f.name)
+        f.close()
+        filenames.append(f.name)
+        print("Stored tmp file at: {} \t Size: {}".format(f.name,
+        os.path.getsize(f.name)))
 
     prediction = []
     try:
@@ -103,9 +102,8 @@ def predict_data(*args, **kwargs):
     except Exception as e:
         raise e
     finally:
-        if parse_version(deepaas_ver) <= parse_version(deepaas_ver_cut):
-            for imgfile in filenames:
-                os.remove(imgfile)
+        for imgfile in filenames:
+            os.remove(imgfile)
 
     return prediction
 

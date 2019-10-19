@@ -48,10 +48,7 @@ def predict_file(img_path, *args):
     Function to make prediction on a local file
     """
     print ('image_path: ',img_path)
-    #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
-    model_dir = os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models','retinopathy_serve')
+    model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
     print (model_dir)
     results=runpred.predict_image(model_dir,img_path)
     print ('[DEBUG] results: %s'%results)
@@ -153,9 +150,7 @@ def train(*args):
     # data_origin = 'rshare:/records_short/'
     e1=time.time()
     data_origin = 'rshare:/records/'
-    data_copy = os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'dataset','records')
+    data_copy = os.path.join(cfg.BASE_DIR,'dataset','records')
     command = (['rclone', 'copy', data_origin, data_copy])    
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()

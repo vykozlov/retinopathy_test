@@ -76,8 +76,8 @@ def predict_data(*args, **kwargs):
     else:
         imgs = args[0]
 
-    if not isinstance(imgs, list):
-        imgs = [imgs]
+    #if not isinstance(imgs, list):
+    #    imgs = [imgs]
             
     for image in imgs:
         if deepaas_ver >= deepaas_ver_cut:

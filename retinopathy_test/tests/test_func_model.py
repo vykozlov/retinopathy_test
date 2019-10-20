@@ -14,10 +14,35 @@ import unittest
 import retinopathy_test.config as cfg
 import retinopathy_test.models.model as retina_model
 
+import flask
+import flask_restplus
+
+
+import deepaas
+#from deepaas import api
+from deepaas.api import v1
+import deepaas.model
+#from deepaas.tests import base
+
+
 class TestModelFunc(unittest.TestCase):
     def setUp(self):
-        self.test_img_path = os.path.join(cfg.BASE_DIR,'retinopathy_test/tests/input/dr4.tiff')
+        self.test_img = "dr4.tiff"
+        self.test_img_dir = os.path.join(cfg.BASE_DIR,'retinopathy_test/tests/input/')
+        self.test_img_path = os.path.join(self.test_img_dir, self.test_img)
         self.pred_result = retina_model.predict_file(self.test_img_path)
+       
+        app = flask.Flask(__name__)
+        app.config['TESTING'] = True
+        app.config['DEBUG'] = True
+
+        api = flask_restplus.Api(app, doc=False)
+        api.add_namespace(v1.api)
+
+        deepaas.model.register_models()
+
+        self.app = app.test_client()
+        self.assertEqual(app.debug, True)
  
     def test_predict_type(self):
         """
@@ -34,15 +59,7 @@ class TestModelFunc(unittest.TestCase):
         prob_cut = 0.5
 
         prob = self.pred_result[self.test_img_path]['probabilities'][0][test_class]
-        print(self.pred_result)
-        print(self.pred_result[self.test_img_path]['probabilities'])
-        print(self.pred_result[self.test_img_path]['classes'])
-        #for pred in pred_result["predictions"]:
-        #    print("prob: ", pred["probability"])
-        #    print("label: ", pred["label"])
-        #    label = pred["label"]
-        #    if label == 'Saint_bernard':
-        #        prob = pred["probability"]
+        print("[TEST_predict_file]", self.pred_result)
     
         #model = retina_model.build_model(network)
 
@@ -51,6 +68,16 @@ class TestModelFunc(unittest.TestCase):
         #print("prob for dr4.tiff: ", prob)
     
         assert prob > prob_cut
+        
+    def test_predict_data(self):
+
+        f = open(self.test_img_path)
+        ret = self.app.post(
+            "/models/retinopathy_test/predict",
+            data={"data": (f, self.test_img)})
+        f.close()
+        print("[TEST_predict_data]", ret)
+        self.assertEqual(200, ret.status_code)
 
 if __name__ == '__main__':
     unittest.main()

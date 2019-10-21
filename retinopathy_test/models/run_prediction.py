@@ -32,7 +32,7 @@ def predict_image(model_dir, image_file): #ki: this is the main function perform
     f = glob.glob(model_dir)[0]
     print (f)
     imgs = image_file.split(',')
-    predictor_fn = tf.contrib.predictor.from_saved_model(export_dir = model_dir, signature_def_key='predict')#ki: create predictor function using the graph and model parameters
+    predictor_fn = tf.contrib.predictor.from_saved_model(export_dir = f, signature_def_key='predict')#ki: create predictor function using the graph and model parameters
     results={}
     for imgfile in imgs:
         img = load_image(imgfile, 256)

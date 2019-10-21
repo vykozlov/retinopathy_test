@@ -74,7 +74,7 @@ def predict_data(*args, **kwargs):
     if deepaas_ver >= deepaas_ver_cut:
         for arg in args:
             imgs.append(arg['files'])
-            trained_graph = yaml.safe_load(arg.trained_graph)
+            trained_graph = str(yaml.safe_load(arg.trained_graph))
     else:
         imgs = args[0]
 

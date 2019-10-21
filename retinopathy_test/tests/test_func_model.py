@@ -30,7 +30,7 @@ class TestModelFunc(unittest.TestCase):
         self.test_img = "dr4.tiff"
         self.test_img_dir = os.path.join(cfg.BASE_DIR,'retinopathy_test/tests/input/')
         self.test_img_path = os.path.join(self.test_img_dir, self.test_img)
-        self.pred_result = retina_model.predict_file(self.test_img_path, '1540408813')
+        self.pred_result = retina_model.predict_file(self.test_img_path, "1540408813")
        
         app = flask.Flask(__name__)
         app.config['TESTING'] = True

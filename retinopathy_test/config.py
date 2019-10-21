@@ -11,8 +11,8 @@ train_args = { 'num_epochs': {'default': 1,
                               'required': False
                              },
 }
-predict_args = {'trained_graph':   {'default': '1540408813',
-                             'choices': ['1540408813', '1533577729'],
+predict_args = {'trained_graph':   {'default': '1540408813 (CPU)',
+                             'choices': ['1540408813 (CPU)', '1533577729 (GPU)'],
                              'help': 'Version of the pre-trained graph to use',
                              'required': False
                            },

@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 
-@Library(['github.com/indigo-dc/jenkins-pipeline-library']) _
+@Library(['github.com/indigo-dc/jenkins-pipeline-library@1.2.3']) _
 
 def job_result_url = ''
 
@@ -13,7 +13,7 @@ pipeline {
         author_name = "HMGU"
         author_email = "itokeiic@gmail.com"
         app_name = "retinopathy_test"
-        job_location = "Pipeline-as-code/DEEP-OC-org/DEEP-OC-retinopathy_test/master"
+        job_location = "Pipeline-as-code/DEEP-OC-org/DEEP-OC-retinopathy_test/${env.BRANCH_NAME}"
     }
 
     stages {
@@ -43,6 +43,34 @@ pipeline {
             }
         }
 
+        stage('Unit testing coverage') {
+            steps {
+                ToxEnvRun('cover')
+                ToxEnvRun('cobertura')
+            }
+            post {
+                success {
+                    HTMLReport('cover', 'index.html', 'coverage.py report')
+                    CoberturaReport('**/coverage.xml')
+                }
+            }
+        }
+
+        stage('Metrics gathering') {
+            agent {
+                label 'sloc'
+            }
+            steps {
+                checkout scm
+                SLOCRun()
+            }
+            post {
+                success {
+                    SLOCPublish()
+                }
+            }
+        }
+
         stage('Security scanner') {
             steps {
                 ToxEnvRun('bandit-report')
@@ -59,7 +87,14 @@ pipeline {
             }
         }
 
-        stage("Re-build DEEP-OC-retinopathy_test Docker image") {
+        stage("Re-build Docker images") {
+            when {
+                anyOf {
+                   branch 'master'
+                   branch 'test'
+                   buildingTag()
+               }
+            }
             steps {
                 script {
                     def job_result = JenkinsBuildJob("${env.job_location}")
@@ -67,6 +102,7 @@ pipeline {
                 }
             }
         }
+
     }
 
     post {
@@ -92,8 +128,9 @@ A new build of '${app_name} DEEP application is available in Jenkins at:\n\n
 terminated with '${build_status}' status.\n\n
 Check console output at:\n\n
 *  ${env.BUILD_URL}/console\n\n
-and resultant Docker image rebuilding job at (may be empty in case of FAILURE):\n\n
+and resultant Docker images rebuilding jobs at (may be empty in case of FAILURE):\n\n
 *  ${job_result_url}\n\n
+
 DEEP Jenkins CI service"""
 
                 EmailSend(subject, body, "${author_email}")

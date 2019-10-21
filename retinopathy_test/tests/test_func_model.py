@@ -53,7 +53,6 @@ class TestModelFunc(unittest.TestCase):
     def test_predict_file(self):
         """
         Functional test of predict_file
-        Also visualizes the neural network
         """
         test_class = 4
         prob_cut = 0.5
@@ -70,7 +69,10 @@ class TestModelFunc(unittest.TestCase):
         assert prob > prob_cut
         
     def test_predict_data(self):
-
+        """
+        Functional test of predict_data
+        Post the input file via flask
+        """
         f = open(self.test_img_path)
         ret = self.app.post(
             "/models/retinopathy_test/predict",

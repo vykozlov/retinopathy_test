@@ -58,13 +58,6 @@ class TestModelFunc(unittest.TestCase):
         prob_cut = 0.5
 
         prob = self.pred_result[self.test_img_path]['probabilities'][0][test_class]
-        print("[TEST_predict_file]", self.pred_result)
-    
-        #model = retina_model.build_model(network)
-
-        # print model summary
-        #model.summary()
-        #print("prob for dr4.tiff: ", prob)
     
         assert prob > prob_cut
         
@@ -78,7 +71,6 @@ class TestModelFunc(unittest.TestCase):
             "/models/retinopathy_test/predict",
             data={"data": (f, self.test_img)})
         f.close()
-        print("[TEST_predict_data]", ret)
         self.assertEqual(200, ret.status_code)
 
 if __name__ == '__main__':

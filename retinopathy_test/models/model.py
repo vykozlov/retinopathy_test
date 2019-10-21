@@ -2,6 +2,7 @@
 """
 Model description
 """
+import yaml
 import pkg_resources
 # import project config.py
 import retinopathy_test.config as cfg
@@ -43,16 +44,16 @@ def get_metadata():
 
     return meta
 
-def predict_file(img_path, *args):
+def predict_file(img_path, trained_graph):
     """
     Function to make prediction on a local file
     """
     print ('image_path: ',img_path)
-    model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
+    model_dir = os.path.join(cfg.BASE_DIR, 'models',
+                            'retinopathy_serve', trained_graph)
     print (model_dir)
     results=runpred.predict_image(model_dir,img_path)
     print ('[DEBUG] results: %s'%results)
-    message = 'Not implemented in the model (predict_file, yoohoo!)'
     return results
 
 
@@ -73,11 +74,12 @@ def predict_data(*args, **kwargs):
     if deepaas_ver >= deepaas_ver_cut:
         for arg in args:
             imgs.append(arg['files'])
+            trained_graph = yaml.safe_load(arg.trained_graph)
     else:
         imgs = args[0]
 
-    #if not isinstance(imgs, list):
-    #    imgs = [imgs]
+    if not isinstance(imgs, list):
+        imgs = [imgs]
             
     for image in imgs:
         if deepaas_ver >= deepaas_ver_cut:
@@ -94,7 +96,7 @@ def predict_data(*args, **kwargs):
     prediction = []
     try:
         for imgfile in filenames:
-            prediction.append(str(predict_file(imgfile)))
+            prediction.append(str(predict_file(imgfile, trained_graph)))
             print("image: ", imgfile)
     except Exception as e:
         raise e
@@ -209,19 +211,28 @@ def train(*args):
     return message
 
 def get_train_args():
-    #{ 'arg1' : {'default': '1',     #value must be a string (use json.dumps to convert Python objects)
-                #'help': '',         #can be an empty string
-                #'required': False   #bool
-                #},
-    #'arg2' : {...
-                #},
-    #...
-    #}
-    args = {}
-    
-    return args
 
+    train_args = cfg.train_args
+
+    # convert default values and possible 'choices' into strings
+    for key, val in train_args.items():
+        val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
+        if 'choices' in val:
+            val['choices'] = [str(item) for item in val['choices']]
+        print(val['default'], type(val['default']))
+
+    return train_args
+
+
+# !!! deepaas>=0.5.0 calls get_test_args() to get args for 'predict'
 def get_test_args():
-    test_args={
-        }
-    return test_args
+    predict_args = cfg.predict_args
+
+    # convert default values and possible 'choices' into strings
+    for key, val in predict_args.items():
+        val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
+        if 'choices' in val:
+            val['choices'] = [str(item) for item in val['choices']]
+        print(val['default'], type(val['default']))
+
+    return predict_args

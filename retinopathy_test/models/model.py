@@ -48,11 +48,7 @@ def predict_file(img_path, trained_graph):
     """
     Function to make prediction on a local file
     """
-    print ('image_path: ',img_path)
-    # remove (CPU) or (GPU) notation in the name of graphs
-    if "(CPU)" in trained_graph or "(GPU)" in trained_graph:
-        trained_graph = trained_graph.split(" ")[0]
-
+    print ('image_path: ', img_path)
     model_dir = os.path.join(cfg.BASE_DIR, 'models',
                             'retinopathy_serve', trained_graph)
     print (model_dir)

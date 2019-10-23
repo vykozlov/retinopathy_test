@@ -234,9 +234,9 @@ def train(train_args):
                               #'retinopathy_serve_short')
     #data_copy = 'rshare:/retinopathy_serve_short/'
     # Retina_LocalModelServe and Retina_RemoteModelServe are defined in config.py #vk
-    command = (['rclone', 'copy', '--progress', cfg.Retina_LocalModelServe, cfg.Retina_RemoteModelServe])
-    result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = result.communicate()
+    #-command = (['rclone', 'copy', '--progress', cfg.Retina_LocalModelServe, cfg.Retina_RemoteModelServe])
+    #-result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #-output, error = result.communicate()
     print(error)
     upload_time=time.time()-e3
     training_data_path = os.path.join(cfg.BASE_DIR,

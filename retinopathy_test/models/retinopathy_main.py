@@ -51,9 +51,9 @@ DATASET_NAME = 'RETINOPATHY'
 ###############################################################################
 def get_filenames(is_training, data_dir):
   if is_training:
-    return cfg.Retina_TrainingData
+    return [os.path.join(data_dir, cfg.Retina_TrainingData)]
   else:
-    return cfg.Retina_ValidationData
+    return [os.path.join(data_dir, cfg.Retina_ValidationData)]
 
 
 def parse_record(example_proto, is_training):

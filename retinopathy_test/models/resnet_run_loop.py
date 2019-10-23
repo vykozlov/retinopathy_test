@@ -386,12 +386,17 @@ def resnet_main(
       batch_size=flags_obj.batch_size)
 
   def input_fn_train():
-    return input_function(
-        is_training=True, data_dir=flags_obj.data_dir,
-        batch_size=distribution_utils.per_device_batch_size(
-            flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
-        num_epochs=flags_obj.epochs_between_evals,
-        num_gpus=flags_core.get_num_gpus(flags_obj))
+      print("[DEBUG input_fn_train] data_dir: ", flags_obj.data_dir)
+      print("[DEBUG input_fn_train] batch_size: ", distribution_utils.per_device_batch_size(
+                                                   flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)))
+      print("[DEBUG input_fn_train] num_epochs: ", flags_obj.epochs_between_evals)
+      print("[DEBUG input_fn_train] num_gpus: ", flags_core.get_num_gpus(flags_obj))
+      return input_function(
+            is_training=True, data_dir=flags_obj.data_dir,
+            batch_size=distribution_utils.per_device_batch_size(
+                flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
+            num_epochs=flags_obj.epochs_between_evals,
+            num_gpus=flags_core.get_num_gpus(flags_obj))
 
   def input_fn_eval():
     return input_function(

@@ -237,7 +237,7 @@ def train(train_args):
     #-command = (['rclone', 'copy', '--progress', cfg.Retina_LocalModelServe, cfg.Retina_RemoteModelServe])
     #-result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #-output, error = result.communicate()
-    print(error)
+    #-print(error)
     upload_time=time.time()-e3
     training_data_path = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',

@@ -403,8 +403,7 @@ def resnet_main(
         is_training=False, data_dir=flags_obj.data_dir,
         batch_size=distribution_utils.per_device_batch_size(
             flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
-        num_epochs=10) 
-        # vk: changed num_epochs for evaluation to 10 to have an average
+        num_epochs=1) 
 
   total_training_cycle = (flags_obj.train_epochs //
                           flags_obj.epochs_between_evals)
@@ -436,7 +435,9 @@ def resnet_main(
     # Exports a saved model for the given classifier.
     input_receiver_fn = export.build_tensor_serving_input_receiver_fn(
         shape, batch_size=flags_obj.batch_size)
-    classifier.export_savedmodel(flags_obj.export_dir, input_receiver_fn)
+    savedmodel_path = classifier.export_savedmodel(flags_obj.export_dir,
+                                                   input_receiver_fn)
+    print("[INFO]: SavedModel path: ", savedmodel_path)
 
 
 def define_resnet_flags(resnet_size_choices=None):

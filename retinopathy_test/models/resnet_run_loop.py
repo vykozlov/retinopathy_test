@@ -398,7 +398,8 @@ def resnet_main(
         is_training=False, data_dir=flags_obj.data_dir,
         batch_size=distribution_utils.per_device_batch_size(
             flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
-        num_epochs=1)
+        num_epochs=10) 
+        # vk: changed num_epochs for evaluation to 10 to have an average
 
   total_training_cycle = (flags_obj.train_epochs //
                           flags_obj.epochs_between_evals)

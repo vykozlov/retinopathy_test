@@ -10,9 +10,11 @@ import retinopathy_test.models.run_prediction as runpred #ki: comment out to avo
 import os
 import tempfile
 import retinopathy_test.models.retinopathy_main as retimain
+import retinopathy_test.models.resnet_run_loop as resnet_run_loop
 # import retinopathy_test.models.models-master.official as official
 from absl import flags
 from absl import app as absl_app
+from official.utils.logs import logger
 
 import tensorflow as tf
 #from official.utils.flags import core as flags_core
@@ -144,32 +146,69 @@ def file_size(file_path):
         return convert_bytes(file_info.st_size)
 
 
-def train(*args):
+def train(train_args):
     """
     Train network
     """
+    # Check if necessary local directories exist:
+    if not os.path.exists(cfg.Retina_LocalDataRecords):
+        print("[INFO] %s is not found locally, creating..." % 
+              cfg.Retina_LocalDataRecords)
+        os.makedirs(cfg.Retina_LocalDataRecords)
+    if not os.path.exists(cfg.Retina_LocalModelServe):
+        print("[INFO] %s is not found locally, creating..." % 
+              cfg.Retina_LocalModelServe)
+        os.makedirs(cfg.Retina_LocalModelServe)  
+
+    # Take parameters defined via deepaas by a user
+    #num_gpus = yaml.safe_load(train_args.num_gpus)
+    train_epochs = yaml.safe_load(train_args.train_epochs)
+    batch_size = yaml.safe_load(train_args.batch_size)
+    
     # from deep-nextcloud into the container
     # data_origin = 'rshare:/records_short/'
+    training_data = os.path.join(cfg.Retina_LocalDataRecords, 
+                                 cfg.Retina_TrainingData)
+    validation_data = os.path.join(cfg.Retina_LocalDataRecords, 
+                                   cfg.Retina_ValidationData)
     e1=time.time()
-    data_origin = 'rshare:/records/'
-    data_copy = os.path.join(cfg.BASE_DIR,'dataset','records')
-    command = (['rclone', 'copy', data_origin, data_copy])    
-    result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = result.communicate()
-    print(error)
+    # check if retinopathy_tr.tfrecord or retinopathy_va.tfrecord exist locally,
+    # if not -> download them from the RemoteStorage
+    if not (os.path.exists(training_data) or os.path.exists(validation_data)):
+        # Retina_RemoteDataRecords and Retina_LocalDataRecords are defined in config.py #vk
+        print("[INFO] Either %s or %s NOT found locally, download them from %s" % 
+              (training_data, validation_data, cfg.Retina_RemoteDataRecords))
+        command = (['rclone', 'copy', '--progress', cfg.Retina_RemoteDataRecords, cfg.Retina_LocalDataRecords])    
+        result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = result.communicate()
+        print(error)
+        
     download_time=time.time()-e1
     time.sleep(60)
  
-    #FLAGS=flags.FLAGS
+    FLAGS=flags.FLAGS
     #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()
-    #for name in list(FLAGS):
-        #print (name)
+    for name in list(FLAGS):
+        print (name)
         #if name == 'listen-ip':
             #delattr(flags.FLAGS, name)
-    tf.logging.set_verbosity(tf.logging.INFO)
+
     e2=time.time()
-    #retimain.define_retinopathy_flags()#FLAGS
+    tf.logging.set_verbosity(tf.logging.INFO)
+    print("[DEBUG] Logging verbosity set")
+    #flags.adopt_module_key_flags(retimain)
+    print("[DEBUG] Flags adopted from resnet_run_loop")
+    #absl_app.run(retimain.define_retinopathy_flags(
+    #                                        batch_size=batch_size,
+    #                                        train_epochs=train_epochs)) #FLAGS
+    #FLAGS=flags.FLAGS
+    #for name in list(FLAGS):
+    #    print (name)
+
+    print("[DEBUG] Flags define_retinopaty set")
+    #absl_app.run(retimain.main())
+
     #absl_app.run(retimain.main)
     #retimain.main(flags)
     #training_script=os.path.join(cfg.BASE_DIR,
@@ -182,7 +221,9 @@ def train(*args):
                               'retinopathy_main.py')
 
     print(training_script)
-    code = subprocess.call(["python", training_script])
+    code = subprocess.call(["python", training_script, 
+                            '--batch_size', str(batch_size), 
+                            '--train_epochs', str(train_epochs)])
     print(code)
     training_time=time.time()-e2
     time.sleep(60)
@@ -192,13 +233,8 @@ def train(*args):
                               #'models',
                               #'retinopathy_serve_short')
     #data_copy = 'rshare:/retinopathy_serve_short/'
-    data_origin = os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models',
-                              'retinopathy_serve')
-    data_copy = 'rshare:/retinopathy_serve/'
-    
-    command = (['rclone', 'copy', data_origin, data_copy])
+    # Retina_LocalModelServe and Retina_RemoteModelServe are defined in config.py #vk
+    command = (['rclone', 'copy', '--progress', cfg.Retina_LocalModelServe, cfg.Retina_RemoteModelServe])
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
     print(error)

@@ -51,9 +51,9 @@ DATASET_NAME = 'RETINOPATHY'
 ###############################################################################
 def get_filenames(is_training, data_dir):
   if is_training:
-    return [os.path.join(data_dir, 'retinopathy_tr.tfrecords')]
+    return cfg.Retina_TrainingData
   else:
-    return [os.path.join(data_dir, 'retinopathy_va.tfrecords')]
+    return cfg.Retina_ValidationData
 
 
 def parse_record(example_proto, is_training):
@@ -237,7 +237,7 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
   )
 
 
-def define_retinopathy_flags():
+def define_retinopathy_flags(batch_size=16, train_epochs=10):
   resnet_run_loop.define_resnet_flags()
   flags.adopt_module_key_flags(resnet_run_loop)
   #flags_core.set_defaults(data_dir='./records/',
@@ -247,19 +247,13 @@ def define_retinopathy_flags():
                           #epochs_between_evals=5,
                           #batch_size=1,
                           #export_dir='./retinopathy_serve/')
-  flags_core.set_defaults(data_dir=os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'dataset','records'),
-                          model_dir = os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models','retinopathy_model'),
+  flags_core.set_defaults(data_dir=cfg.Retina_LocalDataRecords,
+                          model_dir = cfg.Retina_LocalModels,
                           resnet_size='50',
-                          train_epochs=10, #10
+                          train_epochs=train_epochs, #10
                           epochs_between_evals=1, #5
-                          batch_size=1,
-                          export_dir= os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models','retinopathy_serve'))
+                          batch_size=batch_size,
+                          export_dir= cfg.Retina_LocalModelServe)
 
 
 def run_retinopathy(flags_obj):
@@ -268,8 +262,9 @@ def run_retinopathy(flags_obj):
   Args:
     flags_obj: An object containing parsed flag values.
   """
-  input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
-                    or input_fn)
+  #input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
+  #                  or input_fn)
+  input_function = (input_fn)
   resnet_run_loop.resnet_main(
       flags_obj, retinopathy_model_fn, input_function, DATASET_NAME,
       shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS]) 

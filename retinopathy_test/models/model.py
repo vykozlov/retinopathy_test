@@ -227,17 +227,27 @@ def train(train_args):
     print(code)
     training_time=time.time()-e2
     time.sleep(60)
+
     e3=time.time()
-    #data_origin = os.path.join(cfg.BASE_DIR,
-                              #'retinopathy_test',
-                              #'models',
-                              #'retinopathy_serve_short')
-    #data_copy = 'rshare:/retinopathy_serve_short/'
     # Retina_LocalModelServe and Retina_RemoteModelServe are defined in config.py #vk
-    #-command = (['rclone', 'copy', '--progress', cfg.Retina_LocalModelServe, cfg.Retina_RemoteModelServe])
-    #-result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #-output, error = result.communicate()
-    #-print(error)
+    upload_back = yaml.safe_load(train_args.upload_back)
+    if(upload_back):
+        def getmtime(name):
+            path = os.path.join(cfg.Retina_LocalModelServe, name)
+            return os.path.getmtime(path)
+        # build list of directories aka training runs
+        train_runs = sorted(os.listdir(cfg.Retina_LocalModelServe),
+                            key=getmtime, reverse=True)
+        print("[DEBUG] train_runs: ", train_runs)
+        last_run = train_runs[0]
+        print("[DEBUG] last run: ", last_run)
+        # copy only last training run
+        command = (['rclone', 'copy', '--progress', os.path.join(cfg.Retina_LocalModelServe, last_run),
+                    os.path.join( cfg.Retina_RemoteModelServe, last_run)])
+        result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = result.communicate()
+        print(error)
+
     upload_time=time.time()-e3
     training_data_path = os.path.join(cfg.BASE_DIR,
                               'retinopathy_test',

@@ -21,6 +21,11 @@ train_args = { 'train_epochs': {'default': 10,
                               'help': 'Global Batch size',
                               'required': False
                               },
+               'upload_back': {'default': False,
+                               'choices': [False, True],
+                               'help': 'Either upload a trained graph back to the remote storage (True) or not (False, default)',
+                               'required': False
+                              },
 }
 predict_args = {'trained_graph':   {'default': '1540408813_cpu',
                              'choices': ['1540408813_cpu', '1533577729_gpu'],

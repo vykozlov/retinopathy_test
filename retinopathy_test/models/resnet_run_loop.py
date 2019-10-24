@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import shutil
 
 # pylint: disable=g-bad-import-order
 from absl import flags
@@ -411,8 +412,8 @@ def resnet_main(
     tf.logging.info('Starting a training cycle: %d/%d',
                     cycle_index, total_training_cycle)
 
-#-    classifier.train(input_fn=input_fn_train, hooks=train_hooks,
-#-                     max_steps=flags_obj.max_train_steps)
+    #-classifier.train(input_fn=input_fn_train, hooks=train_hooks,
+    #-                 max_steps=flags_obj.max_train_steps)
 
     tf.logging.info('Starting to evaluate.')
 
@@ -425,10 +426,10 @@ def resnet_main(
     eval_results = classifier.evaluate(input_fn=input_fn_eval,
                                        steps=flags_obj.max_train_steps)
 
-    print("[INFO] checking types of eval_results:")
+    tf.logging.info("Convert types of eval_results (np.xx types) to std python (needed for json.dump():")
     for key, value in eval_results.items():
-        print(key, value, type(value))
-        eval_results[key] = value.val()
+        #print(key, value, type(value))
+        eval_results[key] = value.item()
         print(key, eval_results[key], type(eval_results[key]))
 
     benchmark_logger.log_evaluation_result(eval_results)
@@ -443,7 +444,12 @@ def resnet_main(
         shape, batch_size=flags_obj.batch_size)
     savedmodel_path = classifier.export_savedmodel(flags_obj.export_dir,
                                                    input_receiver_fn)
+    savedmodel_path = savedmodel_path.decode() # convert a byte string to a normal string
     print("[INFO]: SavedModel path: ", savedmodel_path)
+    if (flags_obj.benchmark_logger_type == "BenchmarkFileLogger"  and hasattr(flags_obj, "benchmark_log_dir")):
+        log_dir = flags_obj.benchmark_log_dir
+        shutil.move(os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME), savedmodel_path)
+        shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
 
 
 def define_resnet_flags(resnet_size_choices=None):

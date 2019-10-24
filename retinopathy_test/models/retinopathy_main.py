@@ -247,13 +247,16 @@ def define_retinopathy_flags(batch_size=16, train_epochs=10):
                           #epochs_between_evals=5,
                           #batch_size=1,
                           #export_dir='./retinopathy_serve/')
+  flags_core.set_defaults(benchmark_log_dir=cfg.Retina_LocalModels)    #vk: log_dir same as model_dir
   flags_core.set_defaults(data_dir=cfg.Retina_LocalDataRecords,
-                          model_dir = cfg.Retina_LocalModels,
+                          model_dir=cfg.Retina_LocalModels,
                           resnet_size='50',
                           train_epochs=train_epochs, #10
                           epochs_between_evals=1, #5
                           batch_size=batch_size,
-                          export_dir= cfg.Retina_LocalModelServe)
+                          export_dir=cfg.Retina_LocalModelServe,
+                          benchmark_logger_type='BenchmarkFileLogger') #vk: create log files
+
 
 
 def run_retinopathy(flags_obj):

@@ -411,8 +411,8 @@ def resnet_main(
     tf.logging.info('Starting a training cycle: %d/%d',
                     cycle_index, total_training_cycle)
 
-    classifier.train(input_fn=input_fn_train, hooks=train_hooks,
-                     max_steps=flags_obj.max_train_steps)
+#-    classifier.train(input_fn=input_fn_train, hooks=train_hooks,
+#-                     max_steps=flags_obj.max_train_steps)
 
     tf.logging.info('Starting to evaluate.')
 
@@ -424,6 +424,12 @@ def resnet_main(
     # global_step count.
     eval_results = classifier.evaluate(input_fn=input_fn_eval,
                                        steps=flags_obj.max_train_steps)
+
+    print("[INFO] checking types of eval_results:")
+    for key, value in eval_results.items():
+        print(key, value, type(value))
+        eval_results[key] = value.val()
+        print(key, eval_results[key], type(eval_results[key]))
 
     benchmark_logger.log_evaluation_result(eval_results)
 

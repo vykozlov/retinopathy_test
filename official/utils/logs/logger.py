@@ -184,7 +184,7 @@ class BenchmarkFileLogger(BaseBenchmarkLogger):
       try:
         print("[INFO] metric: ", metric )
         print("[INFO] metric: ", str(metric) )
-        json.dump(str(metric), self._metric_file_handler)
+        json.dump(metric, self._metric_file_handler)
         self._metric_file_handler.write("\n")
         self._metric_file_handler.flush()
       except (TypeError, ValueError) as e:

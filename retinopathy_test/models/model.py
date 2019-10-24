@@ -23,6 +23,16 @@ from pkg_resources import parse_version
 import subprocess
 import time
 
+
+def rclone_copy(src_path, dest_path):
+    command = (['rclone', 'copy', '--progress', src_path, dest_path])    
+    try:
+        result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = result.communicate()
+    except OSError as e:
+        output, error = None, e
+    return output, error
+    
 def get_metadata():
 
     module = __name__.split('.', 1)
@@ -50,11 +60,15 @@ def predict_file(img_path, trained_graph):
     """
     Function to make prediction on a local file
     """
-    print ('image_path: ', img_path)
-    model_dir = os.path.join(cfg.BASE_DIR, 'models',
-                            'retinopathy_serve', trained_graph)
-    print (model_dir)
-    results=runpred.predict_image(model_dir,img_path)
+    print ('[DEBUG] image_path: ', img_path)
+    model_dir = os.path.join(cfg.Retina_LocalModelsServe, trained_graph)
+    print ('[DEBUG] model_dir: ', model_dir)
+
+    if not os.path.exists(model_dir):
+        output, error = rclone_copy(os.path.join(cfg.Retina_RemoteModelsServe, trained_graph),
+                                    model_dir)
+
+    results=runpred.predict_image(model_dir, img_path)
     print ('[DEBUG] results: %s'%results)
     return results
 
@@ -155,10 +169,10 @@ def train(train_args):
         print("[INFO] %s is not found locally, creating..." % 
               cfg.Retina_LocalDataRecords)
         os.makedirs(cfg.Retina_LocalDataRecords)
-    if not os.path.exists(cfg.Retina_LocalModelServe):
+    if not os.path.exists(cfg.Retina_LocalModelsServe):
         print("[INFO] %s is not found locally, creating..." % 
-              cfg.Retina_LocalModelServe)
-        os.makedirs(cfg.Retina_LocalModelServe)  
+              cfg.Retina_LocalModelsServe)
+        os.makedirs(cfg.Retina_LocalModelsServe)  
 
     # Take parameters defined via deepaas by a user
     #num_gpus = yaml.safe_load(train_args.num_gpus)
@@ -178,9 +192,7 @@ def train(train_args):
         # Retina_RemoteDataRecords and Retina_LocalDataRecords are defined in config.py #vk
         print("[INFO] Either %s or %s NOT found locally, download them from %s" % 
               (training_data, validation_data, cfg.Retina_RemoteDataRecords))
-        command = (['rclone', 'copy', '--progress', cfg.Retina_RemoteDataRecords, cfg.Retina_LocalDataRecords])    
-        result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = result.communicate()
+        output, error = rclone_copy(cfg.Retina_RemoteDataRecords, cfg.Retina_LocalDataRecords)
         print(error)
         
     download_time=time.time()-e1
@@ -229,23 +241,21 @@ def train(train_args):
     time.sleep(60)
 
     e3=time.time()
-    # Retina_LocalModelServe and Retina_RemoteModelServe are defined in config.py #vk
+    # Retina_LocalModelsServe and Retina_RemoteModelServe are defined in config.py #vk
     upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back):
         def getmtime(name):
-            path = os.path.join(cfg.Retina_LocalModelServe, name)
+            path = os.path.join(cfg.Retina_LocalModelsServe, name)
             return os.path.getmtime(path)
         # build list of directories aka training runs
-        train_runs = sorted(os.listdir(cfg.Retina_LocalModelServe),
+        train_runs = sorted(os.listdir(cfg.Retina_LocalModelsServe),
                             key=getmtime, reverse=True)
         print("[DEBUG] train_runs: ", train_runs)
         last_run = train_runs[0]
         print("[DEBUG] last run: ", last_run)
         # copy only last training run
-        command = (['rclone', 'copy', '--progress', os.path.join(cfg.Retina_LocalModelServe, last_run),
-                    os.path.join( cfg.Retina_RemoteModelServe, last_run)])
-        result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = result.communicate()
+        output, error = rclone_copy(os.path.join(cfg.Retina_LocalModelsServe, last_run),
+                                    os.path.join(cfg.Retina_RemoteModelServe, last_run))
         print(error)
 
     upload_time=time.time()-e3

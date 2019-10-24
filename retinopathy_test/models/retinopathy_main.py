@@ -254,7 +254,7 @@ def define_retinopathy_flags(batch_size=16, train_epochs=10):
                           train_epochs=train_epochs, #10
                           epochs_between_evals=1, #5
                           batch_size=batch_size,
-                          export_dir=cfg.Retina_LocalModelServe,
+                          export_dir=cfg.Retina_LocalModelsServe,
                           benchmark_logger_type='BenchmarkFileLogger') #vk: create log files
 
 

@@ -6,10 +6,10 @@ BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
 Retina_RemoteStorage = 'rshare:/'
 Retina_RemoteShare = 'https://nc.deep-hybrid-datacloud.eu/s/D7DLWcDsRoQmRMN/download?path=%2F&files='
 Retina_RemoteDataRecords = path.join(Retina_RemoteStorage, 'records')
-Retina_RemoteModelServe = path.join(Retina_RemoteStorage, 'retinopathy_serve_vk')
+Retina_RemoteModelsServe = path.join(Retina_RemoteStorage, 'retinopathy_serve_vk')
 Retina_LocalDataRecords = path.join(BASE_DIR, 'data', 'records')
 Retina_LocalModels = path.join(BASE_DIR, 'models')
-Retina_LocalModelServe = path.join(Retina_LocalModels, 'retinopathy_serve')
+Retina_LocalModelsServe = path.join(Retina_LocalModels, 'retinopathy_serve')
 Retina_TrainingData = "retinopathy_tr.tfrecords"
 Retina_ValidationData = "retinopathy_va.tfrecords"
 

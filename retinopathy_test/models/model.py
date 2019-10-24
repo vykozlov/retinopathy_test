@@ -255,13 +255,12 @@ def train(train_args):
         print("[DEBUG] last run: ", last_run)
         # copy only last training run
         output, error = rclone_copy(os.path.join(cfg.Retina_LocalModelsServe, last_run),
-                                    os.path.join(cfg.Retina_RemoteModelServe, last_run))
+                                    os.path.join(cfg.Retina_RemoteModelsServe, last_run))
         print(error)
 
     upload_time=time.time()-e3
-    training_data_path = os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'dataset','records','retinopathy_tr.tfrecords')
+    training_data_path = os.path.join(cfg.Retina_LocalDataRecords,
+                                      'retinopathy_tr.tfrecords')
     #message = 'Not implemented in the model (train)'
     message = 'Training finished! download time: %f, training time: %f, upload time: %f, training file size: %s'%(download_time,training_time,upload_time,file_size(training_data_path))
     return message
@@ -275,7 +274,6 @@ def get_train_args():
         val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
         if 'choices' in val:
             val['choices'] = [str(item) for item in val['choices']]
-        print(val['default'], type(val['default']))
 
     return train_args
 
@@ -289,6 +287,6 @@ def get_test_args():
         val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
         if 'choices' in val:
             val['choices'] = [str(item) for item in val['choices']]
-        print(val['default'], type(val['default']))
+        #print(val['default'], type(val['default']))
 
     return predict_args

@@ -182,8 +182,6 @@ class BenchmarkFileLogger(BaseBenchmarkLogger):
     metric = _process_metric_to_json(name, value, unit, global_step, extras)
     if metric:
       try:
-        print("[INFO] metric: ", metric )
-        print("[INFO] metric: ", str(metric) )
         json.dump(metric, self._metric_file_handler)
         self._metric_file_handler.write("\n")
         self._metric_file_handler.flush()

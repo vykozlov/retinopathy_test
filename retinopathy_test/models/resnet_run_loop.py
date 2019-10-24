@@ -423,9 +423,8 @@ def resnet_main(
 
     tf.logging.info("Convert types of eval_results (np.xx types) to std python (needed for json.dump():")
     for key, value in eval_results.items():
-        #print(key, value, type(value))
         eval_results[key] = value.item()
-        print(key, eval_results[key], type(eval_results[key]))
+        #print(key, eval_results[key], type(eval_results[key]))
 
     benchmark_logger.log_evaluation_result(eval_results)
 

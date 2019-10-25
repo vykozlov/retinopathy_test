@@ -25,6 +25,7 @@ from __future__ import print_function
 
 import os
 import shutil
+import zipfile
 
 # pylint: disable=g-bad-import-order
 from absl import flags
@@ -444,6 +445,22 @@ def resnet_main(
         log_dir = flags_obj.benchmark_log_dir
         shutil.move(os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME), savedmodel_path)
         shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
+    
+    # zip the trained graph, aka savedmodel:
+    # adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
+    # full path to the zip file
+    graph_zip_path = savedmodel_path + '.zip'                  
+    # cd to directory with the trained graph
+    os.chdir(os.path.dirname(savedmodel_path.rstrip('/')))
+    dir_to_zip = savedmodel_path.rstrip('/').split('/')[-1]
+    graph_zip = zipfile.ZipFile(graph_zip_path, 'w', zipfile.ZIP_DEFLATED)
+    for root, dirs, files in os.walk(dir_to_zip):
+        for file in files:
+            graph_zip.write(os.path.join(root, file))
+    
+    graph_zip.close()
+    
+    return graph_zip_path
 
 
 def define_resnet_flags(resnet_size_choices=None):

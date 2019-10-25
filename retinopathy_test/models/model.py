@@ -31,6 +31,9 @@ def rclone_copy(src_path, dest_path, cmd='copy',):
         command = (['rclone', 'copy', '--progress', src_path, dest_path])
     elif cmd == 'copylink':
         command = (['rclone', 'copyurl', src_path, dest_path])
+    else:
+        message = "[ERROR] Wrong 'cmd' value! Allowed 'copy', 'copylink', received: " + cmd
+        raise Exception(message)
 
     try:
         result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -253,29 +256,20 @@ def train(train_args):
                               'retinopathy_main.py')
 
     print(training_script)
-    code = subprocess.call(["python", training_script, 
-                            '--batch_size', str(batch_size), 
-                            '--train_epochs', str(train_epochs)])
-    print(code)
+    graph_zip_path = subprocess.call(["python", training_script, 
+                                      '--batch_size', str(batch_size), 
+                                      '--train_epochs', str(train_epochs)])
+    print(graph_zip_path)
     training_time=time.time()-e2
     time.sleep(60)
 
     e3=time.time()
     # Retina_LocalModelsServe and Retina_RemoteModelsUpload are defined in config.py #vk
     upload_back = yaml.safe_load(train_args.upload_back)
-    if(upload_back):
-        def getmtime(name):
-            path = os.path.join(cfg.Retina_LocalModelsServe, name)
-            return os.path.getmtime(path)
-        # build list of directories aka training runs
-        train_runs = sorted(os.listdir(cfg.Retina_LocalModelsServe),
-                            key=getmtime, reverse=True)
-        print("[DEBUG] train_runs: ", train_runs)
-        last_run = train_runs[0]
-        print("[DEBUG] last run: ", last_run)
-        # copy only last training run
-        output, error = rclone_copy(os.path.join(cfg.Retina_LocalModelsServe, last_run),
-                                    os.path.join(cfg.Retina_RemoteModelsUpload, last_run))
+    if(upload_back and os.path.exists(graph_zip_path)):
+        graph_zip_name = graph_zip_path.split('/')[-1]
+        output, error = rclone_copy(graph_zip_path,
+                                    os.path.join(cfg.Retina_RemoteModelsUpload, graph_zip_name))
         print(error)
 
     upload_time=time.time()-e3

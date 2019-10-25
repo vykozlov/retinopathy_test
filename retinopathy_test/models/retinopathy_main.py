@@ -268,14 +268,20 @@ def run_retinopathy(flags_obj):
   #input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
   #                  or input_fn)
   input_function = (input_fn)
-  resnet_run_loop.resnet_main(
-      flags_obj, retinopathy_model_fn, input_function, DATASET_NAME,
-      shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS]) 
+  graph_zip_path = resnet_run_loop.resnet_main(
+                                   flags_obj, retinopathy_model_fn, 
+                                   input_function, DATASET_NAME,
+                                   shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS])
+
+  return graph_zip_path
 
 
 def main(_):
+  graph_zip_path = None
   with logger.benchmark_context(flags.FLAGS):
-    run_retinopathy(flags.FLAGS)
+    graph_zip_path = run_retinopathy(flags.FLAGS)
+    
+  return graph_zip_path
 
 
 if __name__ == '__main__':

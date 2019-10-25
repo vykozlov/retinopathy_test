@@ -9,6 +9,7 @@ import retinopathy_test.config as cfg
 import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
 import os
 import tempfile
+import zipfile
 import retinopathy_test.models.retinopathy_main as retimain
 import retinopathy_test.models.resnet_run_loop as resnet_run_loop
 # import retinopathy_test.models.models-master.official as official
@@ -24,8 +25,13 @@ import subprocess
 import time
 
 
-def rclone_copy(src_path, dest_path):
-    command = (['rclone', 'copy', '--progress', src_path, dest_path])    
+def rclone_copy(src_path, dest_path, cmd='copy',):
+
+    if cmd == 'copy':
+        command = (['rclone', 'copy', '--progress', src_path, dest_path])
+    elif cmd == 'copylink':
+        command = (['rclone', 'copyurl', src_path, dest_path])
+
     try:
         result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = result.communicate()
@@ -63,10 +69,24 @@ def predict_file(img_path, trained_graph):
     print ('[DEBUG] image_path: ', img_path)
     model_dir = os.path.join(cfg.Retina_LocalModelsServe, trained_graph)
     print ('[DEBUG] model_dir: ', model_dir)
+    
+    trained_graph_file = trained_graph + ".zip"
+    store_zip_path = os.path.join(cfg.Retina_LocalModelsServe, trained_graph_file)
 
     if not os.path.exists(model_dir):
-        output, error = rclone_copy(os.path.join(cfg.Retina_RemoteModelsServe, trained_graph),
-                                    model_dir)
+        output, error = rclone_copy(src_path=os.path.join(cfg.Retina_RemotePublic, 
+                                                          'models',
+                                                          trained_graph_file),
+                                    dest_path=store_zip_path,
+                                    cmd='copylink')
+        # if .zip is present locally, de-archive it
+        if os.path.exists(store_zip_path):
+            data_zip = zipfile.ZipFile(store_zip_path, 'r')
+            data_zip.extractall(cfg.Retina_LocalModelsServe)
+            data_zip.close()
+            # remove downloaded zip-file
+            if os.path.exists(model_dir):
+                os.remove(store_zip_path)
 
     results=runpred.predict_image(model_dir, img_path)
     print ('[DEBUG] results: %s'%results)
@@ -201,10 +221,10 @@ def train(train_args):
     FLAGS=flags.FLAGS
     #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()
-    for name in list(FLAGS):
-        print (name)
-        #if name == 'listen-ip':
-            #delattr(flags.FLAGS, name)
+    #for name in list(FLAGS):
+    #    print (name)
+    #    #if name == 'listen-ip':
+    #        #delattr(flags.FLAGS, name)
 
     e2=time.time()
     tf.logging.set_verbosity(tf.logging.INFO)
@@ -241,7 +261,7 @@ def train(train_args):
     time.sleep(60)
 
     e3=time.time()
-    # Retina_LocalModelsServe and Retina_RemoteModelServe are defined in config.py #vk
+    # Retina_LocalModelsServe and Retina_RemoteModelsUpload are defined in config.py #vk
     upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back):
         def getmtime(name):
@@ -255,7 +275,7 @@ def train(train_args):
         print("[DEBUG] last run: ", last_run)
         # copy only last training run
         output, error = rclone_copy(os.path.join(cfg.Retina_LocalModelsServe, last_run),
-                                    os.path.join(cfg.Retina_RemoteModelsServe, last_run))
+                                    os.path.join(cfg.Retina_RemoteModelsUpload, last_run))
         print(error)
 
     upload_time=time.time()-e3

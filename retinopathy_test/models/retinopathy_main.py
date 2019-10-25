@@ -265,6 +265,7 @@ def run_retinopathy(flags_obj):
   Args:
     flags_obj: An object containing parsed flag values.
   """
+  graph_zip_path = None
   #input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
   #                  or input_fn)
   input_function = (input_fn)
@@ -273,16 +274,13 @@ def run_retinopathy(flags_obj):
                                    input_function, DATASET_NAME,
                                    shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS])
 
+  print(graph_zip_path) # needed to pass this to model.py (??) #vk
   return graph_zip_path
 
 
 def main(_):
-  graph_zip_path = None
   with logger.benchmark_context(flags.FLAGS):
-    graph_zip_path = run_retinopathy(flags.FLAGS)
-    
-  return graph_zip_path
-
+    run_retinopathy(flags.FLAGS)
 
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)

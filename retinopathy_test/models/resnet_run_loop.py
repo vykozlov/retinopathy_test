@@ -408,8 +408,8 @@ def resnet_main(
     tf.logging.info('Starting a training cycle: %d/%d',
                     cycle_index, total_training_cycle)
 
-    #-classifier.train(input_fn=input_fn_train, hooks=train_hooks,
-    #-                 max_steps=flags_obj.max_train_steps)
+    classifier.train(input_fn=input_fn_train, hooks=train_hooks,
+                     max_steps=flags_obj.max_train_steps)
 
     tf.logging.info('Starting to evaluate.')
 
@@ -440,16 +440,16 @@ def resnet_main(
     savedmodel_path = classifier.export_savedmodel(flags_obj.export_dir,
                                                    input_receiver_fn)
     savedmodel_path = savedmodel_path.decode() # convert a byte string to a normal string
-    print("[INFO]: SavedModel path: ", savedmodel_path)
+    tf.logging.info("[INFO]: SavedModel path: %s", savedmodel_path)
     if (flags_obj.benchmark_logger_type == "BenchmarkFileLogger"  and hasattr(flags_obj, "benchmark_log_dir")):
         log_dir = flags_obj.benchmark_log_dir
         shutil.move(os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME), savedmodel_path)
         shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
-    
+
     # zip the trained graph, aka savedmodel:
     # adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
     # full path to the zip file
-    graph_zip_path = savedmodel_path + '.zip'                  
+    graph_zip_path = savedmodel_path + '.zip'
     # cd to directory with the trained graph
     os.chdir(os.path.dirname(savedmodel_path.rstrip('/')))
     dir_to_zip = savedmodel_path.rstrip('/').split('/')[-1]
@@ -457,9 +457,9 @@ def resnet_main(
     for root, dirs, files in os.walk(dir_to_zip):
         for file in files:
             graph_zip.write(os.path.join(root, file))
-    
+
     graph_zip.close()
-    
+
     return graph_zip_path
 
 

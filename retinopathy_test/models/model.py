@@ -2,6 +2,10 @@
 """
 Model description
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import yaml
 import pkg_resources
 # import project config.py
@@ -256,10 +260,17 @@ def train(train_args):
                               'retinopathy_main.py')
 
     print(training_script)
-    graph_zip_path = subprocess.call(["python", training_script, 
-                                      '--batch_size', str(batch_size), 
-                                      '--train_epochs', str(train_epochs)])
-    print(graph_zip_path)
+    #code = subprocess.call(["python", training_script,
+    #                                  '--batch_size', str(batch_size), 
+    #                                  '--train_epochs', str(train_epochs)])
+    graph_zip_path = subprocess.check_output(["python", training_script,
+                                            '--batch_size', str(batch_size),
+                                            '--train_epochs', str(train_epochs)])
+
+    print("[DEBUG] type(graph_zip_path)", type(graph_zip_path))
+    graph_zip_path = graph_zip_path.decode().rstrip()
+    print("[DEBUG] after decode, type(graph_zip_path)", type(graph_zip_path))
+    print("[INFO] Call of the training script returned: ", graph_zip_path)
     training_time=time.time()-e2
     time.sleep(60)
 
@@ -271,6 +282,8 @@ def train(train_args):
         output, error = rclone_copy(graph_zip_path,
                                     os.path.join(cfg.Retina_RemoteModelsUpload, graph_zip_name))
         print(error)
+    else:
+        print("[ERROR] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 
     upload_time=time.time()-e3
     training_data_path = os.path.join(cfg.Retina_LocalDataRecords,

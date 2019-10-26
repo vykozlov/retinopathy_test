@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import json
 import shutil
 import zipfile
 
@@ -440,11 +441,26 @@ def resnet_main(
     savedmodel_path = classifier.export_savedmodel(flags_obj.export_dir,
                                                    input_receiver_fn)
     savedmodel_path = savedmodel_path.decode() # convert a byte string to a normal string
-    tf.logging.info("[INFO]: SavedModel path: %s", savedmodel_path)
+
     if (flags_obj.benchmark_logger_type == "BenchmarkFileLogger"  and hasattr(flags_obj, "benchmark_log_dir")):
         log_dir = flags_obj.benchmark_log_dir
-        shutil.move(os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME), savedmodel_path)
+        benchmark_log_path = os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME)
+        shutil.move(benchmark_log_path, savedmodel_path)
         shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
+
+        # attempt to identify a number of GPUs or was it on CPU
+        with open(benchmark_log_path, "r") as json_file:
+            log = json.load(json_file)
+            num_gpus = int(log["machine_config"]["gpu_info"]["count"])
+        gpu_info = ""
+        if num_gpus == 0:
+            gpu_info = "_cpu"
+        elif num_gpus > 0:
+            gpu_info = "_" + str(num_gpus) + "gpu"
+
+        shutil.move(savedmodel_path, savedmodel_path + gpu_info)
+
+    tf.logging.info("[INFO]: SavedModel path: %s", savedmodel_path)
 
     # zip the trained graph, aka savedmodel:
     # adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python

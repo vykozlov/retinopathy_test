@@ -409,8 +409,8 @@ def resnet_main(
     tf.logging.info('Starting a training cycle: %d/%d',
                     cycle_index, total_training_cycle)
 
-    classifier.train(input_fn=input_fn_train, hooks=train_hooks,
-                     max_steps=flags_obj.max_train_steps)
+    #-classifier.train(input_fn=input_fn_train, hooks=train_hooks,
+    #-                 max_steps=flags_obj.max_train_steps)
 
     tf.logging.info('Starting to evaluate.')
 
@@ -438,15 +438,13 @@ def resnet_main(
     # Exports a saved model for the given classifier.
     input_receiver_fn = export.build_tensor_serving_input_receiver_fn(
         shape, batch_size=flags_obj.batch_size)
-    savedmodel_path = classifier.export_savedmodel(flags_obj.export_dir,
+    savedmodel_raw_path = classifier.export_savedmodel(flags_obj.export_dir,
                                                    input_receiver_fn)
-    savedmodel_path = savedmodel_path.decode() # convert a byte string to a normal string
+    savedmodel_raw_path = savedmodel_raw_path.decode() # convert a byte string to a normal string
 
     if (flags_obj.benchmark_logger_type == "BenchmarkFileLogger"  and hasattr(flags_obj, "benchmark_log_dir")):
         log_dir = flags_obj.benchmark_log_dir
         benchmark_log_path = os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME)
-        shutil.move(benchmark_log_path, savedmodel_path)
-        shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
 
         # attempt to identify a number of GPUs or was it on CPU
         with open(benchmark_log_path, "r") as json_file:
@@ -458,7 +456,13 @@ def resnet_main(
         elif num_gpus > 0:
             gpu_info = "_" + str(num_gpus) + "gpu"
 
-        shutil.move(savedmodel_path, savedmodel_path + gpu_info)
+        # add "_cpu" of "_gpu" to just saved graph directory
+        savedmodel_path = savedmodel_raw_path + gpu_info
+        shutil.move(savedmodel_raw_path, savedmodel_path)
+
+        # move benchmark_run.log and metric.log to the just saved graph
+        shutil.move(benchmark_log_path, savedmodel_path)
+        shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
 
     tf.logging.info("[INFO]: SavedModel path: %s", savedmodel_path)
 

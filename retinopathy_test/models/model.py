@@ -17,6 +17,7 @@ import zipfile
 import retinopathy_test.models.retinopathy_main as retimain
 import retinopathy_test.models.resnet_run_loop as resnet_run_loop
 # import retinopathy_test.models.models-master.official as official
+import absl
 from absl import flags
 from absl import app as absl_app
 from official.utils.logs import logger
@@ -225,7 +226,10 @@ def train(train_args):
     download_time=time.time()-e1
     time.sleep(60)
  
-    FLAGS=flags.FLAGS
+    #FLAGS=flags.FLAGS
+    #for name in list(FLAGS):
+    #    print (name)
+
     #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
     #flags.FLAGS.unparse_flags()
     #for name in list(FLAGS):
@@ -234,42 +238,46 @@ def train(train_args):
     #        #delattr(flags.FLAGS, name)
 
     e2=time.time()
+    ### mimic retinopathy_main.py main()
     tf.logging.set_verbosity(tf.logging.INFO)
-    print("[DEBUG] Logging verbosity set")
-    #flags.adopt_module_key_flags(retimain)
-    print("[DEBUG] Flags adopted from resnet_run_loop")
-    #absl_app.run(retimain.define_retinopathy_flags(
-    #                                        batch_size=batch_size,
-    #                                        train_epochs=train_epochs)) #FLAGS
-    #FLAGS=flags.FLAGS
-    #for name in list(FLAGS):
-    #    print (name)
+    # define default FLAGS for retinopathy_main and _run_loop
+    retimain.define_retinopathy_flags(batch_size=str(batch_size),
+                                      train_epochs=str(train_epochs))
+    FLAGS = flags.FLAGS
+    # verify that set flags are stored correctly in FLAGS. Can be removed #vk
+    for key in FLAGS.flag_values_dict():
+        print("{} : {}".format(key, FLAGS[key].value))
 
-    print("[DEBUG] Flags define_retinopaty set")
-    #absl_app.run(retimain.main())
+    # build list of FLAG names and parse them via FLAGS(list)(IMPORTANT!) #vk
+    flag_names = []
+    for name in FLAGS:
+        flag_names.append(name)
 
-    #absl_app.run(retimain.main)
-    #retimain.main(flags)
+    # According to the docs, actual parsing happens by either calling
+    # FLAGS(list_of_arguments) or by app.run()
+    FLAGS(flag_names)
+    # call actual training with the set flags
+    with logger.benchmark_context(flags.FLAGS):
+        graph_zip_path = retimain.run_retinopathy(flags.FLAGS)
+        
+    ### depricated: direct call of the script via subprocess
     #training_script=os.path.join(cfg.BASE_DIR,
-                              #'retinopathy_test',
-                              #'models',
-                              #'retinopathy_main_short.py')
-    training_script=os.path.join(cfg.BASE_DIR,
-                              'retinopathy_test',
-                              'models',
-                              'retinopathy_main.py')
-
-    print(training_script)
+    #                          'retinopathy_test',
+    #                          'models',
+    #                          'retinopathy_main.py')
+    ## alternative (??) retinopathy_main_short.py
+    #print(training_script)
     #code = subprocess.call(["python", training_script,
     #                                  '--batch_size', str(batch_size), 
     #                                  '--train_epochs', str(train_epochs)])
-    graph_zip_path = subprocess.check_output(["python", training_script,
-                                            '--batch_size', str(batch_size),
-                                            '--train_epochs', str(train_epochs)])
+    #    
+    ## check_output allows to catch output/printed informaion
+    #graph_zip_path = subprocess.check_output(["python", training_script,
+    #                                        '--batch_size', str(batch_size),
+    #                                        '--train_epochs', str(train_epochs)])
+    ###
 
-    print("[DEBUG] type(graph_zip_path)", type(graph_zip_path))
     graph_zip_path = graph_zip_path.decode().rstrip()
-    print("[DEBUG] after decode, type(graph_zip_path)", type(graph_zip_path))
     print("[INFO] Call of the training script returned: ", graph_zip_path)
     training_time=time.time()-e2
     time.sleep(60)

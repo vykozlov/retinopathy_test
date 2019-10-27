@@ -409,8 +409,8 @@ def resnet_main(
     tf.logging.info('Starting a training cycle: %d/%d',
                     cycle_index, total_training_cycle)
 
-    #-classifier.train(input_fn=input_fn_train, hooks=train_hooks,
-    #-                 max_steps=flags_obj.max_train_steps)
+    classifier.train(input_fn=input_fn_train, hooks=train_hooks,
+                     max_steps=flags_obj.max_train_steps)
 
     tf.logging.info('Starting to evaluate.')
 
@@ -456,7 +456,7 @@ def resnet_main(
         elif num_gpus > 0:
             gpu_info = "_" + str(num_gpus) + "gpu"
 
-        # add "_cpu" of "_gpu" to just saved graph directory
+        # add "_cpu" or "_gpu" to just saved graph directory
         savedmodel_path = savedmodel_raw_path + gpu_info
         shutil.move(savedmodel_raw_path, savedmodel_path)
 
@@ -470,7 +470,7 @@ def resnet_main(
     # adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
     # full path to the zip file
     graph_zip_path = savedmodel_path + '.zip'
-    # cd to directory with the trained graph
+    # cd to the directory with the trained graph
     os.chdir(os.path.dirname(savedmodel_path.rstrip('/')))
     dir_to_zip = savedmodel_path.rstrip('/').split('/')[-1]
     graph_zip = zipfile.ZipFile(graph_zip_path, 'w', zipfile.ZIP_DEFLATED)

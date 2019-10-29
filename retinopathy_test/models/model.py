@@ -34,10 +34,10 @@ def rclone_copy(src_path, dest_path, cmd='copy',):
 
     if cmd == 'copy':
         command = (['rclone', 'copy', '--progress', src_path, dest_path])
-    elif cmd == 'copylink':
+    elif cmd == 'copyurl':
         command = (['rclone', 'copyurl', src_path, dest_path])
     else:
-        message = "[ERROR] Wrong 'cmd' value! Allowed 'copy', 'copylink', received: " + cmd
+        message = "[ERROR] Wrong 'cmd' value! Allowed 'copy', 'copyurl', received: " + cmd
         raise Exception(message)
 
     try:
@@ -89,7 +89,7 @@ def predict_file(img_path, trained_graph):
               .format(trained_graph, remote_src_path))
         output, error = rclone_copy(src_path=remote_src_path,
                                     dest_path=store_zip_path,
-                                    cmd='copylink')
+                                    cmd='copyurl')
         # if .zip is present locally, de-archive it
         if os.path.exists(store_zip_path):
             print("[INFO] {}.zip was downloaded. Unzipping...".format(trained_graph))

@@ -82,13 +82,17 @@ def predict_file(img_path, trained_graph):
     store_zip_path = os.path.join(cfg.Retina_LocalModelsServe, trained_graph_file)
 
     if not os.path.exists(model_dir):
-        output, error = rclone_copy(src_path=os.path.join(cfg.Retina_RemotePublic, 
-                                                          'models',
-                                                          trained_graph_file),
+        remote_src_path = os.path.join(cfg.Retina_RemotePublic, 
+                                       'models',
+                                       trained_graph_file)
+        print("[INFO] Graph {} is not found. Trying to download it from {}"
+              .format(trained_graph, remote_src_path))
+        output, error = rclone_copy(src_path=remote_src_path,
                                     dest_path=store_zip_path,
                                     cmd='copylink')
         # if .zip is present locally, de-archive it
         if os.path.exists(store_zip_path):
+            print("[INFO] {}.zip was downloaded. Unzipping...".format(trained_graph))
             data_zip = zipfile.ZipFile(store_zip_path, 'r')
             data_zip.extractall(cfg.Retina_LocalModelsServe)
             data_zip.close()
@@ -244,9 +248,6 @@ def train(train_args):
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs))
     FLAGS = flags.FLAGS
-    # verify that set flags are stored correctly in FLAGS. Can be removed #vk
-    for key in FLAGS.flag_values_dict():
-        print("{} : {}".format(key, FLAGS[key].value))
 
     # build list of FLAG names and parse them via FLAGS(list)(IMPORTANT!) #vk
     flag_names = []

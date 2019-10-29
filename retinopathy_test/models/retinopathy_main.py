@@ -269,12 +269,16 @@ def run_retinopathy(flags_obj):
     flags_obj: An object containing parsed flag values.
   """
   graph_zip_path = None
-  
-  for key in flags_obj.flag_values_dict():
-      print("{} : {}".format(key, flags_obj[key].value))
+
+  # verify that set flags are stored correctly in FLAGS. Can be removed #vk
+  check_flags_obj = False
+  if check_flags_obj:
+      for key in flags_obj.flag_values_dict():
+          print("{} : {}".format(key, flags_obj[key].value))
         
+  # comment it out, as it opts synth dataset #vk
   #input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
-  #                  or input_fn)
+  #                  or input_fn)  
   input_function = (input_fn)
   graph_zip_path = resnet_run_loop.resnet_main(
                                    flags_obj, retinopathy_model_fn, 

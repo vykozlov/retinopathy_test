@@ -31,11 +31,23 @@ import time
 
 
 def rclone_copy(src_path, dest_path, cmd='copy',):
+    '''
+    Wrapper around rclone to copy files
+    :param src_path: path of what to copy. in the case of "copyurl" path at the remote
+    :param dest_path: path where to copy
+    :param cmd: how to copy, "copy" or "copyurl"
+    :return: output message and a possible error
+    '''
 
     if cmd == 'copy':
         command = (['rclone', 'copy', '--progress', src_path, dest_path])
     elif cmd == 'copyurl':
-        command = (['rclone', 'copyurl', src_path, dest_path])
+        src_path = '/' + src_path.lstrip('/')
+        src_dir, src_file = os.path.split(src_path)
+        remote_link = cfg.Retina_RemotePublic + src_dir + '&files=' + src_file
+        print("[INFO] Trying to download {} from {}".format(src_file,
+                                                            remote_link))
+        command = (['rclone', 'copyurl', remote_link, dest_path])
     else:
         message = "[ERROR] Wrong 'cmd' value! Allowed 'copy', 'copyurl', received: " + cmd
         raise Exception(message)
@@ -82,11 +94,8 @@ def predict_file(img_path, trained_graph):
     store_zip_path = os.path.join(cfg.Retina_LocalModelsServe, trained_graph_file)
 
     if not os.path.exists(model_dir):
-        remote_src_path = os.path.join(cfg.Retina_RemotePublic, 
-                                       'models',
-                                       trained_graph_file)
-        print("[INFO] Graph {} is not found. Trying to download it from {}"
-              .format(trained_graph, remote_src_path))
+        remote_src_path = os.path.join('models', trained_graph_file)
+        print("[INFO] Graph {} is not found.".format(trained_graph))
         output, error = rclone_copy(src_path=remote_src_path,
                                     dest_path=store_zip_path,
                                     cmd='copyurl')

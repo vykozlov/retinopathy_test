@@ -99,6 +99,11 @@ def predict_file(img_path, trained_graph):
         output, error = rclone_copy(src_path=remote_src_path,
                                     dest_path=store_zip_path,
                                     cmd='copyurl')
+        if error:
+            message = "[ERROR] graph was not properly copied. rclone returned: "
+            message = message + error
+            raise Exception(message)
+
         # if .zip is present locally, de-archive it
         if os.path.exists(store_zip_path):
             print("[INFO] {}.zip was downloaded. Unzipping...".format(trained_graph))
@@ -234,7 +239,10 @@ def train(train_args):
         print("[INFO] Either %s or %s NOT found locally, download them from %s" % 
               (training_data, validation_data, cfg.Retina_RemoteDataRecords))
         output, error = rclone_copy(cfg.Retina_RemoteDataRecords, cfg.Retina_LocalDataRecords)
-        print(error)
+        if error:
+            message = "[ERROR] training data not copied. rclone returned: " + error
+            raise Exception(message)
+            
         
     download_time=time.time()-e1
     time.sleep(60)
@@ -287,7 +295,12 @@ def train(train_args):
     #                                        '--train_epochs', str(train_epochs)])
     ###
 
-    graph_zip_path = graph_zip_path.decode().rstrip()
+    try:
+        graph_zip_path = graph_zip_path.decode()
+    except (UnicodeDecodeError, AttributeError):
+        pass
+    graph_zip_path = graph_zip_path.rstrip()
+
     print("[INFO] Call of the training script returned: ", graph_zip_path)
     training_time=time.time()-e2
     time.sleep(60)
@@ -299,7 +312,8 @@ def train(train_args):
         graph_zip_name = graph_zip_path.split('/')[-1]
         output, error = rclone_copy(graph_zip_path,
                                     os.path.join(cfg.Retina_RemoteModelsUpload, graph_zip_name))
-        print(error)
+        if error:
+            print("[ERROR] rclone returned: {}".format(error))
     else:
         print("[ERROR] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 

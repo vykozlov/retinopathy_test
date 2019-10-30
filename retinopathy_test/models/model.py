@@ -260,11 +260,14 @@ def train(train_args):
 
     e2=time.time()
     ### mimic retinopathy_main.py main()
+    # we first unset all the FLAGS
+    FLAGS = flags.FLAGS
+    FLAGS.unparse_flags()
+
     tf.logging.set_verbosity(tf.logging.INFO)
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs))
-    FLAGS = flags.FLAGS
 
     # build list of FLAG names and parse them via FLAGS(list)(IMPORTANT!) #vk
     flag_names = []

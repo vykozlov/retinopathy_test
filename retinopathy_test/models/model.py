@@ -221,10 +221,10 @@ def train(train_args):
         os.makedirs(cfg.Retina_LocalModelsServe)  
 
     # Take parameters defined via deepaas by a user
-    #num_gpus = yaml.safe_load(train_args.num_gpus)
     train_epochs = yaml.safe_load(train_args.train_epochs)
     batch_size = yaml.safe_load(train_args.batch_size)
-    
+    num_gpus = yaml.safe_load(train_args.num_gpus)
+
     # from deep-nextcloud into the container
     # data_origin = 'rshare:/records_short/'
     training_data = os.path.join(cfg.Retina_LocalDataRecords, 
@@ -260,14 +260,17 @@ def train(train_args):
 
     e2=time.time()
     ### mimic retinopathy_main.py main()
-    # we first unset all the FLAGS
+    # we first delete all the FLAGS
     FLAGS = flags.FLAGS
-    FLAGS.unparse_flags()
+    #FLAGS.unparse_flags()
+    for name in list(FLAGS):
+        delattr(FLAGS, name)
 
     tf.logging.set_verbosity(tf.logging.INFO)
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
-                                      train_epochs=str(train_epochs))
+                                      train_epochs=str(train_epochs),
+                                      num_gpus=str(num_gpus))
 
     # build list of FLAG names and parse them via FLAGS(list)(IMPORTANT!) #vk
     flag_names = []

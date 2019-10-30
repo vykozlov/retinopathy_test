@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from os import path
+import tensorflow as tf
 
 # identify basedir for the package
 BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
@@ -21,6 +22,10 @@ train_args = { 'train_epochs': {'default': 10,
                               'help': 'Global Batch size',
                               'required': False
                               },
+               'num_gpus':   {'default': 1 if tf.test.is_gpu_available() else 0,
+                              'help': 'Number of GPUs to use, if available (0 = CPU)',
+                              'required': False
+                             },
                'upload_back': {'default': False,
                                'choices': [False, True],
                                'help': 'Either upload a trained graph back to the remote storage (True) or not (False, default)',

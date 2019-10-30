@@ -237,7 +237,7 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
   )
 
 
-def define_retinopathy_flags(batch_size=16, train_epochs=10):
+def define_retinopathy_flags(batch_size=16, train_epochs=10, num_gpus=None):
   resnet_run_loop.define_resnet_flags()
   print("[DEBUG] resnet_flags set")
   flags.adopt_module_key_flags(resnet_run_loop)
@@ -257,6 +257,7 @@ def define_retinopathy_flags(batch_size=16, train_epochs=10):
                           train_epochs=train_epochs, #10
                           epochs_between_evals=1, #5
                           batch_size=batch_size,
+                          num_gpus=num_gpus,
                           export_dir=cfg.Retina_LocalModelsServe,
                           benchmark_logger_type='BenchmarkFileLogger') #vk: create log files
 

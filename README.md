@@ -2,7 +2,7 @@ Retinopathy
 ==============================
 
 
-[![Build Status](https://jenkins.indigo-datacloud.eu:8080/buildStatus/icon?job=Pipeline-as-code/DEEP-OC-org/retinopathy_test/master)](https://jenkins.indigo-datacloud.eu:8080/job/Pipeline-as-code/job/DEEP-OC-org/job/retinopathy_test/job/master/)
+[![Build Status](https://jenkins.indigo-datacloud.eu/buildStatus/icon?job=Pipeline-as-code/DEEP-OC-org/retinopathy_test/test)](https://jenkins.indigo-datacloud.eu/job/Pipeline-as-code/job/DEEP-OC-org/job/retinopathy_test/job/test/)
 
 
 Retinopathy classification using Tensorflow
@@ -21,8 +21,6 @@ Project Organization
     │   └── raw            <- The original, immutable data dump.
     │
     ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
-    │
-    ├── docker             <- Directory for Dockerfile(s)
     │
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
@@ -53,7 +51,7 @@ Project Organization
     │   │   │                 predictions
     │   │   └── model.py
     │   │
-    │   └── tests          <- Scripts to perfrom code testing + pylint script
+    │   └── tests          <- Scripts to perfrom code testing
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
     │       └── visualize.py

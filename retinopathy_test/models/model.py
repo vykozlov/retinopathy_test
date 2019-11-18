@@ -12,10 +12,10 @@ import pkg_resources
 import retinopathy_test.config as cfg
 import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
 import os
+import shutil
 import tempfile
 import zipfile
 import retinopathy_test.models.retinopathy_main as retimain
-import retinopathy_test.models.resnet_run_loop as resnet_run_loop
 # import retinopathy_test.models.models-master.official as official
 import absl
 from absl import flags
@@ -315,11 +315,23 @@ def train(train_args):
     # Retina_LocalModelsServe and Retina_RemoteModelsUpload are defined in config.py #vk
     upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back and os.path.exists(graph_zip_path)):
-        graph_zip_name = graph_zip_path.split('/')[-1]
+        graph_zip_dir, graph_zip_name = os.path.split(graph_zip_path)
         output, error = rclone_copy(graph_zip_path,
-                                    os.path.join(cfg.Retina_RemoteModelsUpload, graph_zip_name))
+                                    os.path.join(cfg.Retina_RemoteModelsUpload, 
+                                                 graph_zip_name))
         if error:
             print("[ERROR] rclone returned: {}".format(error))
+        else:
+            # if there is no error, remove zip file and the graph directory
+            os.remove(graph_zip_path)      # remove zipped file
+            savedmodel_dir, _ = os.path.splitext(graph_zip_name) # split name, ext
+            savedmodel_path = os.path.join(graph_zip_dir, savedmodel_dir)
+            ## Try to remove tree, if it exists
+            if os.path.exists(savedmodel_path):
+                shutil.rmtree(savedmodel_path) # remove corresponding directory
+            else:
+                print("[INFO] Saved model path, {}, doesn't exitst!".format(
+                                                              savedmodel_path)) 
     else:
         print("[ERROR] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 

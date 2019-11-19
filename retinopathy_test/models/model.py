@@ -316,6 +316,8 @@ def train(train_args):
     upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back and os.path.exists(graph_zip_path)):
         graph_zip_dir, graph_zip_name = os.path.split(graph_zip_path)
+        print("[INFO] Uploading {} to {} ...".format(graph_zip_name, 
+                                                 cfg.Retina_RemoteModelsUpload))
         output, error = rclone_copy(graph_zip_path,
                                     os.path.join(cfg.Retina_RemoteModelsUpload, 
                                                  graph_zip_name))
@@ -323,17 +325,19 @@ def train(train_args):
             print("[ERROR] rclone returned: {}".format(error))
         else:
             # if there is no error, remove zip file and the graph directory
-            os.remove(graph_zip_path)      # remove zipped file
             savedmodel_dir, _ = os.path.splitext(graph_zip_name) # split name, ext
             savedmodel_path = os.path.join(graph_zip_dir, savedmodel_dir)
             ## Try to remove tree, if it exists
+            print("[INFO] Uploaded, deleting local {} and {}...".format(graph_zip_path,
+                                                                     savedmodel_path))
+            os.remove(graph_zip_path)          # remove zipped file
             if os.path.exists(savedmodel_path):
                 shutil.rmtree(savedmodel_path) # remove corresponding directory
             else:
                 print("[INFO] Saved model path, {}, doesn't exitst!".format(
                                                               savedmodel_path)) 
     else:
-        print("[ERROR] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
+        print("[INFO] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 
     upload_time=time.time()-e3
     training_data_path = os.path.join(cfg.Retina_LocalDataRecords,

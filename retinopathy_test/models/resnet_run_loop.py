@@ -24,9 +24,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import json
-import shutil
-import zipfile
 
 # pylint: disable=g-bad-import-order
 from absl import flags
@@ -389,19 +386,19 @@ def resnet_main(
       batch_size=flags_obj.batch_size)
 
   def input_fn_train():
-      return input_function(
-            is_training=True, data_dir=flags_obj.data_dir,
-            batch_size=distribution_utils.per_device_batch_size(
-                flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
-            num_epochs=flags_obj.epochs_between_evals,
-            num_gpus=flags_core.get_num_gpus(flags_obj))
+    return input_function(
+        is_training=True, data_dir=flags_obj.data_dir,
+        batch_size=distribution_utils.per_device_batch_size(
+            flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
+        num_epochs=flags_obj.epochs_between_evals,
+        num_gpus=flags_core.get_num_gpus(flags_obj))
 
   def input_fn_eval():
     return input_function(
         is_training=False, data_dir=flags_obj.data_dir,
         batch_size=distribution_utils.per_device_batch_size(
             flags_obj.batch_size, flags_core.get_num_gpus(flags_obj)),
-        num_epochs=1) 
+        num_epochs=1)
 
   total_training_cycle = (flags_obj.train_epochs //
                           flags_obj.epochs_between_evals)
@@ -423,11 +420,6 @@ def resnet_main(
     eval_results = classifier.evaluate(input_fn=input_fn_eval,
                                        steps=flags_obj.max_train_steps)
 
-    tf.logging.info("Convert types of eval_results (np.xx types) to std python (needed for json.dump():")
-    for key, value in eval_results.items():
-        eval_results[key] = value.item()
-        #print(key, eval_results[key], type(eval_results[key]))
-
     benchmark_logger.log_evaluation_result(eval_results)
 
     if model_helpers.past_stop_threshold(
@@ -438,49 +430,7 @@ def resnet_main(
     # Exports a saved model for the given classifier.
     input_receiver_fn = export.build_tensor_serving_input_receiver_fn(
         shape, batch_size=flags_obj.batch_size)
-    savedmodel_raw_path = classifier.export_savedmodel(flags_obj.export_dir,
-                                                   input_receiver_fn)
-    savedmodel_raw_path = savedmodel_raw_path.decode() # convert a byte string to a normal string
-
-    if (flags_obj.benchmark_logger_type == "BenchmarkFileLogger"  and hasattr(flags_obj, "benchmark_log_dir")):
-        log_dir = flags_obj.benchmark_log_dir
-        benchmark_log_path = os.path.join(log_dir, logger.BENCHMARK_RUN_LOG_FILE_NAME)
-
-        # attempt to identify a number of GPUs or was it on CPU
-        with open(benchmark_log_path, "r") as json_file:
-            log = json.load(json_file)
-            num_gpus = int(log["machine_config"]["gpu_info"]["count"])
-        gpu_info = ""
-        if num_gpus == 0:
-            gpu_info = "_cpu"
-        elif num_gpus > 0:
-            gpu_info = "_" + str(num_gpus) + "gpu"
-
-        # add "_cpu" or "_gpu" to just saved graph directory
-        savedmodel_path = savedmodel_raw_path + gpu_info
-        shutil.move(savedmodel_raw_path, savedmodel_path)
-
-        # move benchmark_run.log and metric.log to the just saved graph
-        shutil.move(benchmark_log_path, savedmodel_path)
-        shutil.move(os.path.join(log_dir, logger.METRIC_LOG_FILE_NAME), savedmodel_path)
-
-    tf.logging.info("[INFO]: SavedModel path: %s", savedmodel_path)
-
-    # zip the trained graph, aka savedmodel:
-    # adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
-    # full path to the zip file
-    graph_zip_path = savedmodel_path + '.zip'
-    # cd to the directory with the trained graph
-    os.chdir(os.path.dirname(savedmodel_path.rstrip('/')))
-    dir_to_zip = savedmodel_path.rstrip('/').split('/')[-1]
-    graph_zip = zipfile.ZipFile(graph_zip_path, 'w', zipfile.ZIP_DEFLATED)
-    for root, dirs, files in os.walk(dir_to_zip):
-        for file in files:
-            graph_zip.write(os.path.join(root, file))
-
-    graph_zip.close()
-
-    return graph_zip_path
+    classifier.export_savedmodel(flags_obj.export_dir, input_receiver_fn)
 
 
 def define_resnet_flags(resnet_size_choices=None):

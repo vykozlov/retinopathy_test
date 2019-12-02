@@ -6,6 +6,3 @@ opencv-python
 ## backwards compatibility
 #pathlib2
 #
-# info on the system:
-py-cpuinfo
-psutil

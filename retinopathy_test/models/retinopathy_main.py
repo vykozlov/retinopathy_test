@@ -51,9 +51,9 @@ DATASET_NAME = 'RETINOPATHY'
 ###############################################################################
 def get_filenames(is_training, data_dir):
   if is_training:
-    return [os.path.join(data_dir, cfg.Retina_TrainingData)]
+    return [os.path.join(data_dir, 'retinopathy_tr.tfrecords')]
   else:
-    return [os.path.join(data_dir, cfg.Retina_ValidationData)]
+    return [os.path.join(data_dir, 'retinopathy_va.tfrecords')]
 
 
 def parse_record(example_proto, is_training):
@@ -237,11 +237,9 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
   )
 
 
-def define_retinopathy_flags(batch_size=16, train_epochs=10, num_gpus=None):
+def define_retinopathy_flags():
   resnet_run_loop.define_resnet_flags()
-  print("[DEBUG] resnet_flags set")
   flags.adopt_module_key_flags(resnet_run_loop)
-  print("[DEBUG] adopt module key flags from resnet_run_loop")
   #flags_core.set_defaults(data_dir='./records/',
                           #model_dir='./retinopathy_model/',
                           #resnet_size='50',
@@ -249,18 +247,19 @@ def define_retinopathy_flags(batch_size=16, train_epochs=10, num_gpus=None):
                           #epochs_between_evals=5,
                           #batch_size=1,
                           #export_dir='./retinopathy_serve/')
-  flags_core.set_defaults(benchmark_log_dir=cfg.Retina_LocalModels)    #vk: log_dir same as model_dir
-  print("[DEBUG] core.set_defaults")
-  flags_core.set_defaults(data_dir=cfg.Retina_LocalDataRecords,
-                          model_dir=cfg.Retina_LocalModels,
+  flags_core.set_defaults(data_dir=os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'dataset','records'),
+                          model_dir = os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models','retinopathy_model'),
                           resnet_size='50',
-                          train_epochs=train_epochs, #10
+                          train_epochs=10, #10
                           epochs_between_evals=1, #5
-                          batch_size=batch_size,
-                          num_gpus=num_gpus,
-                          export_dir=cfg.Retina_LocalModelsServe,
-                          benchmark_logger_type='BenchmarkFileLogger') #vk: create log files
-
+                          batch_size=1,
+                          export_dir= os.path.join(cfg.BASE_DIR,
+                              'retinopathy_test',
+                              'models','retinopathy_serve'))
 
 
 def run_retinopathy(flags_obj):
@@ -269,30 +268,17 @@ def run_retinopathy(flags_obj):
   Args:
     flags_obj: An object containing parsed flag values.
   """
-  graph_zip_path = None
-
-  # verify that set flags are stored correctly in FLAGS. Can be removed #vk
-  check_flags_obj = False
-  if check_flags_obj:
-      for key in flags_obj.flag_values_dict():
-          print("{} : {}".format(key, flags_obj[key].value))
-        
-  # comment it out, as it opts synth dataset #vk
-  #input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
-  #                  or input_fn)  
-  input_function = (input_fn)
-  graph_zip_path = resnet_run_loop.resnet_main(
-                                   flags_obj, retinopathy_model_fn, 
-                                   input_function, DATASET_NAME,
-                                   shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS])
-
-  print(graph_zip_path) # needed to pass this to model.py (??) #vk
-  return graph_zip_path
+  input_function = (flags_obj.use_synthetic_data and get_synth_input_fn()
+                    or input_fn)
+  resnet_run_loop.resnet_main(
+      flags_obj, retinopathy_model_fn, input_function, DATASET_NAME,
+      shape=[_HEIGHT, _WIDTH, _NUM_CHANNELS]) 
 
 
 def main(_):
   with logger.benchmark_context(flags.FLAGS):
     run_retinopathy(flags.FLAGS)
+
 
 if __name__ == '__main__':
   tf.logging.set_verbosity(tf.logging.INFO)

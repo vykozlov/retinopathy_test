@@ -4,7 +4,8 @@ import tensorflow as tf
 
 # identify basedir for the package
 BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
-Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
+# Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
+Retina_RemoteStorage = 'rshare:/retinopathy_test'
 Retina_RemotePublic = 'https://nc.deep-hybrid-datacloud.eu/s/yNsYpACAFbFS8Rp/download?path='
 Retina_RemoteDataRecords = path.join(Retina_RemoteStorage, 'data', 'records')
 Retina_RemoteModelsUpload = path.join(Retina_RemoteStorage, 'models')

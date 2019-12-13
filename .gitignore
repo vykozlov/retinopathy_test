@@ -4,7 +4,12 @@ __pycache__/
 
 # C extensions
 *.so
-
+# tensorflow training files
+*.tfrecords
+#tensorflow training results and checkpoints
+retinopathy_test/models/retinopathy_serve_short/
+retinopathy_test/models/retinopathy_serve_update/
+retinopathy_test/models/retinopathy_model/
 # Distribution / packaging
 .Python
 env/

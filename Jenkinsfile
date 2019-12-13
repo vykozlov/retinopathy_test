@@ -43,6 +43,34 @@ pipeline {
             }
         }
 
+        stage('Unit testing coverage') {
+            steps {
+                ToxEnvRun('cover')
+                ToxEnvRun('cobertura')
+            }
+            post {
+                success {
+                    HTMLReport('cover', 'index.html', 'coverage.py report')
+                    CoberturaReport('**/coverage.xml')
+                }
+            }
+        }
+
+        stage('Metrics gathering') {
+            agent {
+                label 'sloc'
+            }
+            steps {
+                checkout scm
+                SLOCRun()
+            }
+            post {
+                success {
+                    SLOCPublish()
+                }
+            }
+        }
+
         stage('Security scanner') {
             steps {
                 ToxEnvRun('bandit-report')
@@ -59,7 +87,8 @@ pipeline {
             }
         }
 
-        stage("Re-build DEEP-OC-retinopathy_test Docker image") {
+
+        stage("Re-build Docker images") {
             when {
                 anyOf {
                    branch 'master'
@@ -74,6 +103,7 @@ pipeline {
                 }
             }
         }
+
     }
 
     post {
@@ -99,8 +129,9 @@ A new build of '${app_name} (${env.BRANCH_NAME})' DEEP application is available 
 terminated with '${build_status}' status.\n\n
 Check console output at:\n\n
 *  ${env.BUILD_URL}/console\n\n
-and resultant Docker image rebuilding job at (may be empty in case of FAILURE):\n\n
+and resultant Docker images rebuilding jobs at (may be empty in case of FAILURE):\n\n
 *  ${job_result_url}\n\n
+
 DEEP Jenkins CI service"""
 
                 EmailSend(subject, body, "${author_email}")

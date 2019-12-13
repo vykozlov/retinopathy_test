@@ -2,7 +2,11 @@
 Sphinx
 python-dotenv>=0.5.1
 opencv-python
+deepaas==0.5.1
 #
 ## backwards compatibility
 #pathlib2
 #
+# info on the system:
+py-cpuinfo
+psutil

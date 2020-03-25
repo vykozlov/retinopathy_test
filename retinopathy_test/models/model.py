@@ -28,7 +28,7 @@ import deepaas
 from pkg_resources import parse_version
 import subprocess
 import time
-from webargs import fields
+#from webargs import fields
 
 
 def rclone_copy(src_path, dest_path, cmd='copy',):
@@ -83,6 +83,19 @@ def get_metadata():
 
     return meta
 
+def predict(**args):
+
+    if (not any([args['urls'], args['files']]) or
+            all([args['urls'], args['files']])):
+        raise Exception("You must provide either 'url' or 'data' in the payload")
+
+    if args['files']:
+        args['files'] = [args['files']]  # patch until list is available
+        return predict_data(args)
+    elif args['urls']:
+        args['urls'] = [args['urls']]  # patch until list is available
+        return predict_url(args)
+    
 def predict_file(img_path, trained_graph):
     """
     Function to make prediction on a local file
@@ -352,23 +365,25 @@ def get_train_args():
     train_args = cfg.train_args
 
     # convert default values and possible 'choices' into strings
-    for key, val in train_args.items():
-        val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
-        if 'choices' in val:
-            val['choices'] = [str(item) for item in val['choices']]
+    #for key, val in train_args.items():
+        #val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
+        #if 'choices' in val:
+            #val['choices'] = [str(item) for item in val['choices']]
 
     return train_args
 
 
 # !!! deepaas>=0.5.0 calls get_test_args() to get args for 'predict'
-def get_test_args():
+#def get_test_args():
+def get_predict_args():
+    
     predict_args = cfg.predict_args
 
     # convert default values and possible 'choices' into strings
-    for key, val in predict_args.items():
-        val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
-        if 'choices' in val:
-            val['choices'] = [str(item) for item in val['choices']]
+    #for key, val in predict_args.items():
+        #val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
+        #if 'choices' in val:
+            #val['choices'] = [str(item) for item in val['choices']]
         #print(val['default'], type(val['default']))
 
     return predict_args

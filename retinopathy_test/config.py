@@ -37,15 +37,15 @@ train_args = { 'train_epochs': fields.Int(missing=10,
                               description='Number of epochs to train on',
                               required = False
                              ),
-               'batch_size': fields.Int{missing=16,
+               'batch_size': fields.Int(missing=16,
                               description='Global Batch size',
                               required=False
-                              },
-               'num_gpus':   fields.Int{missing=1,
+                             ),
+               'num_gpus':   fields.Int(missing=1,
                               validate=gpus_must_exist,
                               description='Number of GPUs to use, if available (0 = CPU)',
                               required=False
-                             },
+                             ),
                'upload_back': fields.Bool(missing=False,
                                enum=[False, True],
                                description='Either upload a trained graph back to the remote storage (True) or not (False, default)',
@@ -60,10 +60,24 @@ train_args = { 'train_epochs': fields.Int(missing=10,
                            #},
 
 #}
-predict_args = {'trained_graph': fields.Str{missing='1540408813_cpu',
+predict_args = {'trained_graph': fields.Str(missing='1540408813_cpu',
                              enum=['1540408813_cpu', '1533577729_gpu'],
                              description='Pre-trained graph to use',
                              required=False
-                           },
+                           ),
+                'files': fields.Field(
+                            required=False,
+                            missing=None,
+                            type="file",
+                            data_key="data",
+                            location="form",
+                            description="Select the image you want to classify."
+                           ),
+                'urls': fields.Url(
+                            required=False,
+                            missing=None,
+                            description="Select an URL of the image you want to classify."
+                           )
+
 
 }

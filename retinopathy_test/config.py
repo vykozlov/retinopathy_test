@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from os import path
 import tensorflow as tf
-from webargs import fields, validate
+from webargs import fields, validate, ValidationError
 # identify basedir for the package
 BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
 # Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
@@ -15,6 +15,10 @@ Retina_LocalModelsServe = path.join(Retina_LocalModels, 'retinopathy_serve')
 Retina_TrainingData = "retinopathy_tr.tfrecords"
 Retina_ValidationData = "retinopathy_va.tfrecords"
 
+def gpus_must_exist():
+    if not tf.test.is_gpu_available():
+        raise ValidationError("GPUs does not exist.")
+        
 #train_args = { 'train_epochs': {'default': 10,
                               #'help': 'Number of epochs to train on',
                               #'required': False

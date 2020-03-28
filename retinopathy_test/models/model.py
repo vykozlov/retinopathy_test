@@ -544,11 +544,11 @@ def get_train_args():
 # !!! deepaas>=0.5.0 calls get_test_args() to get args for 'predict'
 #def get_test_args():
 def get_predict_args():
-     """
+    """
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/wip-api_v2/user/v2-api.html#deepaas.model.v2.base.BaseModel.get_predict_args
     :return:
     """
-   
+    
     #predict_args = cfg.predict_args
 
     ## convert default values and possible 'choices' into strings

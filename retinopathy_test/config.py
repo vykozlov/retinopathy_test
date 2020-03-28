@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from os import path
+#import os
 import tensorflow as tf
 from webargs import fields, validate, ValidationError
+from marshmallow import Schema, INCLUDE
 # identify basedir for the package
 BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
 # Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
@@ -85,3 +87,57 @@ predict_args = {'trained_graph': fields.Str(missing='1540408813_cpu',
 
 
 }
+                
+class PredictArgsSchema(Schema):
+    class Meta:
+        unknown = INCLUDE  # supports extra parameters
+
+    trained_graph = fields.Str(
+        required=False,
+        missing='1540408813_cpu',
+        enum=['1540408813_cpu', '1533577729_gpu'],
+        description="Pre-trained graph to use"
+    )
+
+    files = fields.Field(
+        required=False,
+        missing=None,
+        type="file",
+        data_key="data",
+        location="form",
+        description="Select the image you want to classify."
+    )
+
+    urls = fields.Url(
+        required=False,
+        missing=None,
+        description="Select an URL of the image you want to classify."
+    )
+
+
+# class / place to describe arguments for train()
+class TrainArgsSchema(Schema):
+    class Meta:
+        unknown = INCLUDE  # supports extra parameters
+
+    train_epochs = fields.Integer(
+        required=False,
+        missing=10,
+        description="Number of training epochs")
+
+    batch_size = fields.Integer(
+        missing=16,
+        description='Global Batch size',
+        required=False)
+
+    num_gpus =  fields.Integer(
+        missing=1,
+        validate=gpus_must_exist,
+        description='Number of GPUs to use, if available (0 = CPU)',
+        required=False)
+    
+    upload_back = fields.Boolean(
+        missing=False,
+        enum=[False, True],
+        description='Either upload a trained graph back to the remote storage (True) or not (False, default)',
+        required=False)

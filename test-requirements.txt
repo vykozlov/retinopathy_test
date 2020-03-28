@@ -16,3 +16,4 @@ pytest-cov
 pydot-ng
 deepaas>=0.5.1
 flaat
+aiohttp

@@ -2,7 +2,8 @@
 Sphinx
 python-dotenv>=0.5.1
 opencv-python
-deepaas>=0.5.1
+deepaas>=1.0.1
+flaat>=0.5.1
 webargs>=5.5.2
 #
 ## backwards compatibility
@@ -11,3 +12,4 @@ webargs>=5.5.2
 # info on the system:
 py-cpuinfo
 psutil
+marshmallow

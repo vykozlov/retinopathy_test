@@ -385,10 +385,6 @@ def train(**kwargs):
     # deserialize key-word arguments
     train_args = schema.load(kwargs)
 
-
-    num_epochs = train_args['num_epochs']
-    network = train_args['network']
-
     # Take parameters defined via deepaas by a user
     #train_epochs = yaml.safe_load(train_args.train_epochs)
     #batch_size = yaml.safe_load(train_args.batch_size)

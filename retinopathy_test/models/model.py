@@ -304,8 +304,8 @@ def predict_data(*args):
     try:
         #for imgfile in filenames:
         for imgfile in files:    
-            #prediction.append(str(predict_file(imgfile, trained_graph)))
-            prediction.append(predict_file(imgfile, trained_graph))
+            prediction.append(str(predict_file(imgfile, trained_graph)))
+            #prediction.append(predict_file(imgfile, trained_graph))
             print("image: ", imgfile)
     except Exception as e:
         raise e

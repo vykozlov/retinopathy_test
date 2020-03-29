@@ -17,9 +17,10 @@ Retina_LocalModelsServe = path.join(Retina_LocalModels, 'retinopathy_serve')
 Retina_TrainingData = "retinopathy_tr.tfrecords"
 Retina_ValidationData = "retinopathy_va.tfrecords"
 
-def gpus_must_exist():
-    if not tf.test.is_gpu_available():
-        raise ValidationError("GPUs does not exist.")
+def gpus_must_exist(val):
+    if val > 0:
+        if not tf.test.is_gpu_available():
+            raise ValidationError("GPUs does not exist.")
         
 #train_args = { 'train_epochs': {'default': 10,
                               #'help': 'Number of epochs to train on',

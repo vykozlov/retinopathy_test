@@ -439,7 +439,7 @@ def train(**kwargs):
         delattr(FLAGS, name)
 
     #tf.logging.set_verbosity(tf.logging.INFO)
-    tf.compat.v1.logging.set_verbosity(tf.logging.INFO)
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs),

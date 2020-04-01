@@ -4,13 +4,30 @@ import tensorflow as tf
 
 # identify basedir for the package
 BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
+
+# default location for input and output data, e.g. directories 'data' and 'models',
+# is either set relative to the application path or via environment setting
+IN_OUT_BASE_DIR = BASE_DIR
+if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
+    env_in_out_base_dir = os.environ['APP_INPUT_OUTPUT_BASE_DIR']
+    if os.path.isdir(env_in_out_base_dir):
+        IN_OUT_BASE_DIR = env_in_out_base_dir
+    else:
+        msg = "[WARNING] \"APP_INPUT_OUTPUT_BASE_DIR=" + \
+        "{}\" is not a valid directory! ".format(env_in_out_base_dir) + \
+        "Using \"BASE_DIR={}\" instead.".format(BASE_DIR)
+        print(msg)
+ 
 # Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
 Retina_RemoteStorage = 'rshare:/retinopathy_test'
 Retina_RemotePublic = 'https://nc.deep-hybrid-datacloud.eu/s/yNsYpACAFbFS8Rp/download?path='
 Retina_RemoteDataRecords = path.join(Retina_RemoteStorage, 'data', 'records')
 Retina_RemoteModelsUpload = path.join(Retina_RemoteStorage, 'models')
-Retina_LocalDataRecords = path.join(BASE_DIR, 'data', 'records')
-Retina_LocalModels = path.join(BASE_DIR, 'models')
+#Retina_LocalDataRecords = path.join(BASE_DIR, 'data', 'records')
+#Retina_LocalModels = path.join(BASE_DIR, 'models')
+Retina_LocalDataRecords = path.join(IN_OUT_BASE_DIR, 'data', 'records')
+Retina_LocalModels = path.join(IN_OUT_BASE_DIR, 'models')
+
 Retina_LocalModelsServe = path.join(Retina_LocalModels, 'retinopathy_serve')
 Retina_TrainingData = "retinopathy_tr.tfrecords"
 Retina_ValidationData = "retinopathy_va.tfrecords"

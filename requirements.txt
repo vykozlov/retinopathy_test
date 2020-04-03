@@ -10,4 +10,4 @@ deepaas==0.5.1
 # info on the system:
 py-cpuinfo
 psutil
-werkzeug==0.14.0
+werkzeug==0.15.1

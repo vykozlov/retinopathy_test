@@ -9,7 +9,7 @@ BASE_DIR = path.dirname(path.normpath(path.dirname(__file__)))
 # is either set relative to the application path or via environment setting
 IN_OUT_BASE_DIR = BASE_DIR
 if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
-    env_in_out_base_dir = os.environ['APP_INPUT_OUTPUT_BASE_DIR']
+    env_in_out_base_dir = os.environ['APP_INPUT_OUTPUT_BASE_DIR'] # = /mnt/onedata/Keiichi/retinopathy_test
     if os.path.isdir(env_in_out_base_dir):
         IN_OUT_BASE_DIR = env_in_out_base_dir
     else:

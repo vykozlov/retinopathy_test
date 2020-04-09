@@ -392,6 +392,7 @@ def train(**kwargs):
     train_epochs = train_args['train_epochs']
     batch_size = train_args['batch_size']
     num_gpus = train_args['num_gpus']
+    upload_back = train_args['upload_back']
     if debug_model:
         print("train_args:", train_args)
         print(type(train_args['train_epochs']), type(train_args['batch_size']))
@@ -439,6 +440,7 @@ def train(**kwargs):
         delattr(FLAGS, name)
 
     tf.logging.set_verbosity(tf.logging.INFO)
+    #tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs),
@@ -485,7 +487,7 @@ def train(**kwargs):
 
     e3=time.time()
     # Retina_LocalModelsServe and Retina_RemoteModelsUpload are defined in config.py #vk
-    upload_back = yaml.safe_load(train_args.upload_back)
+    # upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back and os.path.exists(graph_zip_path)):
         graph_zip_dir, graph_zip_name = os.path.split(graph_zip_path)
         print("[INFO] Uploading {} to {} ...".format(graph_zip_name, 

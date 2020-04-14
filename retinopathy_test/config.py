@@ -5,7 +5,7 @@ import tensorflow as tf
 from webargs import fields, validate, ValidationError
 from marshmallow import Schema, INCLUDE
 # identify basedir for the package
-BASE_DIR = os.path.dirname(path.normpath(path.dirname(__file__)))
+BASE_DIR = os.path.dirname(os.path.normpath(os.path.dirname(__file__)))
 
 # default location for input and output data, e.g. directories 'data' and 'models',
 # is either set relative to the application path or via environment setting

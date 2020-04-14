@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 def split_tfrecord(tfrecord_path, split_size):
+    print("[INFO] function called")
     with tf.Graph().as_default(), tf.Session() as sess:
         ds = tf.data.TFRecordDataset(tfrecord_path).batch(split_size)
         batch = ds.make_one_shot_iterator().get_next()
@@ -14,3 +15,9 @@ def split_tfrecord(tfrecord_path, split_size):
                         writer.write(record)
                 part_num += 1
             except tf.errors.OutOfRangeError: break
+
+def main():
+    split_tfrecord("/srv/retinopathy_test/data/retinopathy_tr.tfrecords", 128)
+
+if __name__ == '__main__':
+    main()

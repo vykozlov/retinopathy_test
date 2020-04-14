@@ -25,6 +25,8 @@ from absl import app as absl_app #ki: absl is Google's common libraries
 from absl import flags
 import tensorflow as tf  # pylint: disable=g-bad-import-order
 
+from os import listdir
+from os.path import isfile, join
 from official.utils.flags import core as flags_core
 from official.utils.logs import logger
 import retinopathy_test.models.resnet_model as resnet_model
@@ -51,10 +53,15 @@ DATASET_NAME = 'RETINOPATHY'
 ###############################################################################
 def get_filenames(is_training, data_dir):
   if is_training:
-    return [os.path.join(data_dir, cfg.Retina_TrainingData)]
+    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "train-" in f)]  #"_tr."
+    print("[DEBUG] train files: {}".format(files))
+    return files
+    # return [os.path.join(data_dir, cfg.Retina_TrainingData)]
   else:
-    return [os.path.join(data_dir, cfg.Retina_ValidationData)]
-
+    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "validation-" in f)]  #"_va."
+    print("[DEBUG] valid files: {}".format(files))
+    return files
+    # return [os.path.join(data_dir, cfg.Retina_ValidationData)]
 
 def parse_record(example_proto, is_training):
       features = {'image': tf.FixedLenFeature([], tf.string),

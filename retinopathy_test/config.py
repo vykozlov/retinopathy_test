@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from os import path
-#import os
+import os
 import tensorflow as tf
 from webargs import fields, validate, ValidationError
 from marshmallow import Schema, INCLUDE
@@ -23,14 +23,14 @@ if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
 # Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
 Retina_RemoteStorage = 'rshare:/retinopathy_test'
 Retina_RemotePublic = 'https://nc.deep-hybrid-datacloud.eu/s/yNsYpACAFbFS8Rp/download?path='
-Retina_RemoteDataRecords = path.join(Retina_RemoteStorage, 'data', 'records')
-Retina_RemoteModelsUpload = path.join(Retina_RemoteStorage, 'models')
+Retina_RemoteDataRecords = os.path.join(Retina_RemoteStorage, 'data', 'records')
+Retina_RemoteModelsUpload = os.path.join(Retina_RemoteStorage, 'models')
 #Retina_LocalDataRecords = path.join(BASE_DIR, 'data', 'records')
 #Retina_LocalModels = path.join(BASE_DIR, 'models')
-Retina_LocalDataRecords = path.join(IN_OUT_BASE_DIR, 'data', 'records')
-Retina_LocalModels = path.join(IN_OUT_BASE_DIR, 'models')
+Retina_LocalDataRecords = os.path.join(IN_OUT_BASE_DIR, 'data', 'records')
+Retina_LocalModels = os.path.join(IN_OUT_BASE_DIR, 'models')
 
-Retina_LocalModelsServe = path.join(Retina_LocalModels, 'retinopathy_serve')
+Retina_LocalModelsServe = os.path.join(Retina_LocalModels, 'retinopathy_serve')
 Retina_TrainingData = "retinopathy_tr.tfrecords"
 Retina_ValidationData = "retinopathy_va.tfrecords"
 
@@ -57,25 +57,25 @@ def gpus_must_exist(val):
                                #'required': False
                               #},
 #}
-train_args = { 'train_epochs': fields.Int(missing=10,
-                              description='Number of epochs to train on',
-                              required = False
-                             ),
-               'batch_size': fields.Int(missing=16,
-                              description='Global Batch size',
-                              required=False
-                             ),
-               'num_gpus':   fields.Int(missing=1,
-                              validate=gpus_must_exist,
-                              description='Number of GPUs to use, if available (0 = CPU)',
-                              required=False
-                             ),
-               'upload_back': fields.Bool(missing=False,
-                               enum=[False, True],
-                               description='Either upload a trained graph back to the remote storage (True) or not (False, default)',
-                               required=False
-                              ),
-}
+#train_args = { 'train_epochs': fields.Int(missing=10,
+                              #description='Number of epochs to train on',
+                              #required = False
+                             #),
+               #'batch_size': fields.Int(missing=16,
+                              #description='Global Batch size',
+                              #required=False
+                             #),
+               #'num_gpus':   fields.Int(missing=1,
+                              #validate=gpus_must_exist,
+                              #description='Number of GPUs to use, if available (0 = CPU)',
+                              #required=False
+                             #),
+               #'upload_back': fields.Bool(missing=False,
+                               #enum=[False, True],
+                               #description='Either upload a trained graph back to the remote storage (True) or not (False, default)',
+                               #required=False
+                              #),
+#}
 
 #predict_args = {'trained_graph':   {'default': '1540408813_cpu',
                              #'choices': ['1540408813_cpu', '1533577729_gpu'],
@@ -84,27 +84,27 @@ train_args = { 'train_epochs': fields.Int(missing=10,
                            #},
 
 #}
-predict_args = {'trained_graph': fields.Str(missing='1540408813_cpu',
-                             enum=['1540408813_cpu', '1533577729_gpu'],
-                             description='Pre-trained graph to use',
-                             required=False
-                           ),
-                'files': fields.Field(
-                            required=False,
-                            missing=None,
-                            type="file",
-                            data_key="data",
-                            location="form",
-                            description="Select the image you want to classify."
-                           ),
-                'urls': fields.Url(
-                            required=False,
-                            missing=None,
-                            description="Select an URL of the image you want to classify."
-                           )
+#predict_args = {'trained_graph': fields.Str(missing='1540408813_cpu',
+                             #enum=['1540408813_cpu', '1533577729_gpu'],
+                             #description='Pre-trained graph to use',
+                             #required=False
+                           #),
+                #'files': fields.Field(
+                            #required=False,
+                            #missing=None,
+                            #type="file",
+                            #data_key="data",
+                            #location="form",
+                            #description="Select the image you want to classify."
+                           #),
+                #'urls': fields.Url(
+                            #required=False,
+                            #missing=None,
+                            #description="Select an URL of the image you want to classify."
+                           #)
 
 
-}
+#}
                 
 class PredictArgsSchema(Schema):
     class Meta:

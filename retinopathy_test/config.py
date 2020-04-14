@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from os import path
+#from os import path
 import os
 import tensorflow as tf
 from webargs import fields, validate, ValidationError

@@ -28,7 +28,55 @@ import deepaas
 from pkg_resources import parse_version
 import subprocess
 import time
+from webargs import fields, validate, ValidationError
+from aiohttp.web import HTTPBadRequest
+import json
+import mimetypes 
+## Authorization
+from flaat import Flaat
+flaat = Flaat()
 
+# Switch for debugging in this script
+debug_model = True 
+
+def _catch_error(f):
+    def wrap(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            raise HTTPBadRequest(reason=e)
+    return wrap
+
+def _fields_to_dict(fields_in):
+    """
+    Function to convert mashmallow fields to dict()
+    """
+    dict_out = {}
+
+    for key, val in fields_in.items():
+        param = {}
+        param['default'] = val.missing
+        param['type'] = type(val.missing)
+        if key == 'files' or key == 'urls':
+            param['type'] = str
+
+        val_help = val.metadata['description']
+        if 'enum' in val.metadata.keys():
+            val_help = "{}. Choices: {}".format(val_help, 
+                                                val.metadata['enum'])
+        param['help'] = val_help
+
+        try:
+            val_req = val.required
+        except:
+            val_req = False
+        param['required'] = val_req
+
+        dict_out[key] = param
+    return dict_out
+
+class EmptyObj():
+    pass
 
 def rclone_copy(src_path, dest_path, cmd='copy',):
     '''
@@ -59,29 +107,108 @@ def rclone_copy(src_path, dest_path, cmd='copy',):
         output, error = None, e
     return output, error
     
+#def get_metadata():
+
+    #module = __name__.split('.', 1)
+
+    #pkg = pkg_resources.get_distribution(module[0])
+    #meta = {
+        #'Name': None,
+        #'Version': None,
+        #'Summary': None,
+        #'Home-page': None,
+        #'Author': None,
+        #'Author-email': None,
+        #'License': None,
+    #}
+
+    #for line in pkg.get_metadata_lines("PKG-INFO"):
+        #for par in meta:
+            #if line.startswith(par+":"):
+                #_, value = line.split(": ", 1)
+                #meta[par] = value
+
+    #return meta
 def get_metadata():
+    """
+    Function to read metadata
+    """
 
     module = __name__.split('.', 1)
 
-    pkg = pkg_resources.get_distribution(module[0])
-    meta = {
-        'Name': None,
-        'Version': None,
-        'Summary': None,
-        'Home-page': None,
-        'Author': None,
-        'Author-email': None,
-        'License': None,
-    }
+    try:
+        pkg = pkg_resources.get_distribution(module[0])
+    except pkg_resources.RequirementParseError:
+        # if called from CLI, try to get pkg from the path
+        distros = list(pkg_resources.find_distributions(cfg.BASE_DIR, 
+                                                        only=True))
+        if len(distros) == 1:
+            pkg = distros[0]
+    except Exception as e:
+        raise HTTPBadRequest(reason=e)
 
+    # deserialize key-word arguments
+    train_args = _fields_to_dict(get_train_args())
+    # make 'type' JSON serializable
+    for key, val in train_args.items():
+        train_args[key]['type'] = str(val['type'])
+
+    predict_args = _fields_to_dict(get_predict_args())
+    # make 'type' JSON serializable
+    for key, val in predict_args.items():
+        predict_args[key]['type'] = str(val['type'])
+
+    meta = {
+        'name' : None,
+        'version' : None,
+        'summary' : None,
+        'home-page' : None,
+        'author' : None,
+        'author-email' : None,
+        'license' : None,
+        'help-train' : train_args,
+        'help-predict' : predict_args
+    }
     for line in pkg.get_metadata_lines("PKG-INFO"):
+        line_low = line.lower() # to avoid inconsistency due to letter cases
         for par in meta:
-            if line.startswith(par+":"):
+            if line_low.startswith(par.lower() + ":"):
                 _, value = line.split(": ", 1)
                 meta[par] = value
-
+                
     return meta
 
+
+        
+#def predict(**args):
+
+    #if (not any([args['urls'], args['files']]) or
+            #all([args['urls'], args['files']])):
+        #raise Exception("You must provide either 'url' or 'data' in the payload")
+
+    #if args['files']:
+        #args['files'] = [args['files']]  # patch until list is available
+        #return predict_data(args)
+    #elif args['urls']:
+        #args['urls'] = [args['urls']]  # patch until list is available
+        #return predict_url(args)
+        
+def predict(**kwargs):
+
+    print("predict(**kwargs) - kwargs: %s" % (kwargs)) if debug_model else ''
+
+    if (not any([kwargs['urls'], kwargs['files']]) or
+            all([kwargs['urls'], kwargs['files']])):
+        raise Exception("You must provide either 'url' or 'data' in the payload")
+
+    if kwargs['files']:
+        kwargs['files'] = [kwargs['files']]  # patch until list is available
+        return predict_data(kwargs)
+    elif kwargs['urls']:
+        kwargs['urls'] = [kwargs['urls']]  # patch until list is available
+        return predict_url(kwargs)
+
+    
 def predict_file(img_path, trained_graph):
     """
     Function to make prediction on a local file
@@ -119,51 +246,72 @@ def predict_file(img_path, trained_graph):
     return results
 
 
-def predict_data(*args, **kwargs):
+def predict_data(*args):
     """
     Function to make prediction on an uploaded file
     """
-    deepaas_ver_cut = parse_version('0.5.0')
-    imgs = []
-    filenames = []
+    #deepaas_ver_cut = parse_version('0.5.0')
+    #imgs = []
+    #filenames = []
     
-    deepaas_ver = parse_version(deepaas.__version__)
-    print("[INFO] deepaas_version: %s" % deepaas_ver)
-    predict_debug = False
-    if predict_debug:
-        print('[DEBUG] predict_data - args: %s' % args)
-        print('[DEBUG] predict_data - kwargs: %s' % kwargs)
-    if deepaas_ver >= deepaas_ver_cut:
-        for arg in args:
-            imgs.append(arg['files'])
-            trained_graph = str(yaml.safe_load(arg.trained_graph))
-    else:
-        imgs = args[0]
+    #deepaas_ver = parse_version(deepaas.__version__)
+    #print("[INFO] deepaas_version: %s" % deepaas_ver)
+    #predict_debug = False
+    #if predict_debug:
+        #print('[DEBUG] predict_data - args: %s' % args)
+        #print('[DEBUG] predict_data - kwargs: %s' % kwargs)
+    #if deepaas_ver >= deepaas_ver_cut:
+        #for arg in args:
+            #imgs.append(arg['files'])
+            #trained_graph = str(yaml.safe_load(arg.trained_graph))
+    #else:
+        #imgs = args[0]
 
-    if not isinstance(imgs, list):
-        imgs = [imgs]
+    #if not isinstance(imgs, list):
+        #imgs = [imgs]
             
-    for image in imgs:
-        if deepaas_ver >= deepaas_ver_cut:
-            f = open("/tmp/%s" % image[0].filename, "w+")
-            image[0].save(f.name)
-        else:
-            f = tempfile.NamedTemporaryFile(delete=False)
-            f.write(image)
-        f.close()
-        filenames.append(f.name)
-        print("Stored tmp file at: {} \t Size: {}".format(f.name,
-        os.path.getsize(f.name)))
+    #for image in imgs:
+        #if deepaas_ver >= deepaas_ver_cut:
+            #f = open("/tmp/%s" % image[0].filename, "w+")
+            #image[0].save(f.name)
+        #else:
+            #f = tempfile.NamedTemporaryFile(delete=False)
+            #f.write(image)
+        #f.close()
+        #filenames.append(f.name)
+        #print("Stored tmp file at: {} \t Size: {}".format(f.name,
+        #os.path.getsize(f.name)))
+        
+    print("predict_data(*args) - args: %s" % (args)) if debug_model else ''
+
+    files = []
+
+    for arg in args:
+        file_objs = arg['files']
+        for f in file_objs:
+            files.append(f.filename)
+            if debug_model:
+                print("file_obj: name: {}, filename: {}, content_type: {}".format(
+                                                               f.name,
+                                                               f.filename,
+                                                               f.content_type))
+                print("File for prediction is at: {} \t Size: {}".format(
+                                                  f.filename,
+                                                  os.path.getsize(f.filename)))
+        trained_graph = arg['trained_graph']
 
     prediction = []
     try:
-        for imgfile in filenames:
+        #for imgfile in filenames:
+        for imgfile in files:    
             prediction.append(str(predict_file(imgfile, trained_graph)))
+            #prediction.append(predict_file(imgfile, trained_graph))
             print("image: ", imgfile)
     except Exception as e:
         raise e
     finally:
-        for imgfile in filenames:
+        #for imgfile in filenames:
+        for imgfile in files:
             os.remove(imgfile)
 
     return prediction
@@ -185,6 +333,7 @@ def predict_url(*args):
     Function to make prediction on a URL
     """    
     message = 'Not implemented in the model (predict_url)'
+    message = {"Error": message}
     return message
 
 def convert_bytes(num):
@@ -205,11 +354,22 @@ def file_size(file_path):
         file_info = os.stat(file_path)
         return convert_bytes(file_info.st_size)
 
+@flaat.login_required() # Require only authorized people to do training
+#def train(train_args):
+def train(**kwargs):
+    """
+    Train network (transfer learning)
+    Parameters
+    ----------
+    https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/wip-api_v2/user/v2-api.html#deepaas.model.v2.base.BaseModel.train
+    """
+    print("train(**kwargs) - kwargs: %s" % (kwargs)) if debug_model else ''
+    run_results = { "status": "ok",
+                    "sys_info": [],
+                    "training": [],
+                  }
 
-def train(train_args):
-    """
-    Train network
-    """
+
     # Check if necessary local directories exist:
     if not os.path.exists(cfg.Retina_LocalDataRecords):
         print("[INFO] %s is not found locally, creating..." % 
@@ -220,10 +380,23 @@ def train(train_args):
               cfg.Retina_LocalModelsServe)
         os.makedirs(cfg.Retina_LocalModelsServe)  
 
+    # use the schema
+    schema = cfg.TrainArgsSchema()
+    # deserialize key-word arguments
+    train_args = schema.load(kwargs)
+
     # Take parameters defined via deepaas by a user
-    train_epochs = yaml.safe_load(train_args.train_epochs)
-    batch_size = yaml.safe_load(train_args.batch_size)
-    num_gpus = yaml.safe_load(train_args.num_gpus)
+    #train_epochs = yaml.safe_load(train_args.train_epochs)
+    #batch_size = yaml.safe_load(train_args.batch_size)
+    #num_gpus = yaml.safe_load(train_args.num_gpus)
+    train_epochs = train_args['train_epochs']
+    batch_size = train_args['batch_size']
+    num_gpus = train_args['num_gpus']
+    upload_back = train_args['upload_back']
+    if debug_model:
+        print("train_args:", train_args)
+        print(type(train_args['train_epochs']), type(train_args['batch_size']))
+        print("Number of GPUs:", train_args['num_gpus'], num_gpus)
 
     # from deep-nextcloud into the container
     # data_origin = 'rshare:/records_short/'
@@ -267,6 +440,7 @@ def train(train_args):
         delattr(FLAGS, name)
 
     tf.logging.set_verbosity(tf.logging.INFO)
+    #tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs),
@@ -313,7 +487,7 @@ def train(train_args):
 
     e3=time.time()
     # Retina_LocalModelsServe and Retina_RemoteModelsUpload are defined in config.py #vk
-    upload_back = yaml.safe_load(train_args.upload_back)
+    # upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back and os.path.exists(graph_zip_path)):
         graph_zip_dir, graph_zip_name = os.path.split(graph_zip_path)
         print("[INFO] Uploading {} to {} ...".format(graph_zip_name, 
@@ -347,27 +521,41 @@ def train(train_args):
     return message
 
 def get_train_args():
+    """
+    https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/wip-api_v2/user/v2-api.html#deepaas.model.v2.base.BaseModel.get_train_args
+    https://marshmallow.readthedocs.io/en/latest/api_reference.html#module-marshmallow.fields
+    :param kwargs:
+    :return:
+    """
 
-    train_args = cfg.train_args
+    #train_args = cfg.train_args
 
-    # convert default values and possible 'choices' into strings
-    for key, val in train_args.items():
-        val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
-        if 'choices' in val:
-            val['choices'] = [str(item) for item in val['choices']]
+    ## convert default values and possible 'choices' into strings
+    ##for key, val in train_args.items():
+        ##val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
+        ##if 'choices' in val:
+            ##val['choices'] = [str(item) for item in val['choices']]
 
-    return train_args
-
+    #return train_args
+    return cfg.TrainArgsSchema().fields
 
 # !!! deepaas>=0.5.0 calls get_test_args() to get args for 'predict'
-def get_test_args():
-    predict_args = cfg.predict_args
+#def get_test_args():
+def get_predict_args():
+    """
+    https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/wip-api_v2/user/v2-api.html#deepaas.model.v2.base.BaseModel.get_predict_args
+    :return:
+    """
+    
+    #predict_args = cfg.predict_args
 
-    # convert default values and possible 'choices' into strings
-    for key, val in predict_args.items():
-        val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
-        if 'choices' in val:
-            val['choices'] = [str(item) for item in val['choices']]
-        #print(val['default'], type(val['default']))
+    ## convert default values and possible 'choices' into strings
+    ##for key, val in predict_args.items():
+        ##val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
+        ##if 'choices' in val:
+            ##val['choices'] = [str(item) for item in val['choices']]
+        ##print(val['default'], type(val['default']))
 
-    return predict_args
+    #return predict_args
+    return cfg.PredictArgsSchema().fields
+

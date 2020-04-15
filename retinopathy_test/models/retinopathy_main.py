@@ -53,13 +53,13 @@ DATASET_NAME = 'RETINOPATHY'
 ###############################################################################
 def get_filenames(is_training, data_dir):
   if is_training:
-    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "train-" in f)]  #"_tr."
-    print("[DEBUG] train files: {}".format(files))
+    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "_tr.tfrecords." in f)]  #"_tr."
+    # print("[DEBUG] train files: {}".format(files))
     return files
     # return [os.path.join(data_dir, cfg.Retina_TrainingData)]
   else:
-    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "validation-" in f)]  #"_va."
-    print("[DEBUG] valid files: {}".format(files))
+    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "_va.tfrecords." in f)]  #"_va."
+    # print("[DEBUG] valid files: {}".format(files))
     return files
     # return [os.path.join(data_dir, cfg.Retina_ValidationData)]
 

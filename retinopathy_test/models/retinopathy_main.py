@@ -52,16 +52,22 @@ DATASET_NAME = 'RETINOPATHY'
 # Data processing
 ###############################################################################
 def get_filenames(is_training, data_dir):
-  if is_training:
-    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "_tr.tfrecords." in f)]  #"_tr."
-    # print("[DEBUG] train files: {}".format(files))
+    files = []
+    if is_training:
+        for f in listdir(data_dir):
+            if (isfile(join(data_dir, f)) and cfg.Retina_TrainingData in f):
+                files.append(join(data_dir, f))
+
+        # print("[DEBUG] train files: {}".format(files))
+
+    else:
+        for f in listdir(data_dir):
+            if (isfile(join(data_dir, f)) and cfg.Retina_ValidationData in f):
+                files.append(join(data_dir, f))
+
+        # print("[DEBUG] valid files: {}".format(files))
+
     return files
-    # return [os.path.join(data_dir, cfg.Retina_TrainingData)]
-  else:
-    files = [join(data_dir, f) for f in listdir(data_dir) if (isfile(join(data_dir, f)) and "_va.tfrecords." in f)]  #"_va."
-    # print("[DEBUG] valid files: {}".format(files))
-    return files
-    # return [os.path.join(data_dir, cfg.Retina_ValidationData)]
 
 def parse_record(example_proto, is_training):
       features = {'image': tf.FixedLenFeature([], tf.string),

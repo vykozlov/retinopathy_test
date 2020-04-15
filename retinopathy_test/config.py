@@ -31,8 +31,8 @@ Retina_RemoteModelsUpload = os.path.join(Retina_RemoteStorage, 'models')
 Retina_LocalDataRecords = os.path.join(DATA_DIR, 'records')
 Retina_LocalModels = MODELS_DIR
 Retina_LocalModelsServe = os.path.join(Retina_LocalModels, 'retinopathy_serve')
-Retina_TrainingData = "retinopathy_tr.tfrecords.*"    # "retinopathy_tr.tfrecords"
-Retina_ValidationData = "retinopathy_va.tfrecords.*"  # "retinopathy_va.tfrecords"
+Retina_TrainingData = "retinopathy_tr.tfrecords."    # "retinopathy_tr.tfrecords"
+Retina_ValidationData = "retinopathy_va.tfrecords."  # "retinopathy_va.tfrecords"
 
 def gpus_must_exist(val):
     if val > 0:

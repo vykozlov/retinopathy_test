@@ -319,6 +319,7 @@ def train(**kwargs):
     train_epochs = train_args['train_epochs']
     batch_size = train_args['batch_size']
     num_gpus = train_args['num_gpus']
+    epochs_between_evals = train_args['epochs_between_evals']
     upload_back = train_args['upload_back']
     if debug_model:
         print("train_args:", train_args)
@@ -327,14 +328,15 @@ def train(**kwargs):
 
     # from deep-nextcloud into the container
     e1=time.time()
-    # check if retinopathy_tr.tfrecord or retinopathy_va.tfrecord exist locally,
+    # check if retinopathy_tr.tfrecord.XX or retinopathy_va.tfrecord.XX files exist locally,
     # if not -> download them from the RemoteStorage
     train_files = 0
     val_files = 0
     for f in os.listdir(cfg.Retina_LocalDataRecords):
-        if (os.path.isfile(os.path.join(cfg.Retina_LocalDataRecords, f)) and cfg.Retina_TrainingData in f):
+        f_path = os.path.join(cfg.Retina_LocalDataRecords, f)
+        if (os.path.isfile(f_path) and cfg.Retina_TrainingData in f):
             train_files += 1
-        if (os.path.isfile(os.path.join(cfg.Retina_LocalDataRecords, f)) and cfg.Retina_ValidationData in f):
+        if (os.path.isfile(f_path) and cfg.Retina_ValidationData in f):
             val_files += 1
 
     if train_files < 100 or val_files < 20:
@@ -345,7 +347,7 @@ def train(**kwargs):
         if error:
             message = "[ERROR] training data not copied. rclone returned: " + error
             raise Exception(message)
-            
+
         
     download_time=time.time()-e1
     time.sleep(60)
@@ -363,7 +365,8 @@ def train(**kwargs):
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs),
-                                      num_gpus=str(num_gpus))
+                                      num_gpus=str(num_gpus),
+                                      epochs_between_evals=str(epochs_between_evals))
 
     # build list of FLAG names and parse them via FLAGS(list)(IMPORTANT!) #vk
     flag_names = []
@@ -416,10 +419,24 @@ def train(**kwargs):
         print("[INFO] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 
     upload_time=time.time()-e3
-    training_data_path = os.path.join(cfg.Retina_LocalDataRecords,
-                                      'retinopathy_tr.tfrecords')
+    
+    train_files_size = 0
+    val_files_size = 0
+    for f in os.listdir(cfg.Retina_LocalDataRecords):
+        f_path = os.path.join(cfg.Retina_LocalDataRecords, f)
+        if (os.path.isfile(f_path) and cfg.Retina_TrainingData in f):
+            train_files_size += os.stat(f_path).st_size
+        if (os.path.isfile(f_path) and cfg.Retina_ValidationData in f):
+            val_files_size += os.stat(f_path).st_size
 
-    message = 'Training finished! download time: %f, training time: %f, upload time: %f, training file size: %s'%(download_time,training_time,upload_time,file_size(training_data_path))
+    message = {
+              "Message": "Training finished!",
+              "Download time": download_time, 
+              "Training time": training_time,
+              "Upload time": upload_time,
+              "Training set size": convert_bytes(train_files_size), 
+              "Validation set size": convert_bytes(val_files_size)
+    }
     return message
 
 def get_train_args():

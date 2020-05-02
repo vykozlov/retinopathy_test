@@ -125,7 +125,7 @@ def input_fn(is_training, data_dir, batch_size, num_epochs=1, num_gpus=None):
       dataset=dataset,
       is_training=is_training,
       batch_size=batch_size,
-      shuffle_buffer=_NUM_IMAGES['train']//16, #ki: originally set to 2
+      shuffle_buffer=_NUM_IMAGES['train']//batch_size, #vk 16->batch_size #ki: originally set to 2
       parse_record_fn=parse_record,
       num_epochs=num_epochs,
       num_gpus=num_gpus,
@@ -250,7 +250,8 @@ def retinopathy_model_fn(features, labels, mode, params): #ki: prepares the mode
   )
 
 
-def define_retinopathy_flags(batch_size=16, train_epochs=10, num_gpus=None):
+def define_retinopathy_flags(batch_size=16, train_epochs=10, 
+                             num_gpus=None, epochs_between_evals=2):
   resnet_run_loop.define_resnet_flags()
   print("[DEBUG] resnet_flags set")
   flags.adopt_module_key_flags(resnet_run_loop)
@@ -268,7 +269,7 @@ def define_retinopathy_flags(batch_size=16, train_epochs=10, num_gpus=None):
                           model_dir=cfg.Retina_LocalModels,
                           resnet_size='50',
                           train_epochs=train_epochs, #10
-                          epochs_between_evals=1, #5
+                          epochs_between_evals=epochs_between_evals, #vk: 1,5 -> configirable
                           batch_size=batch_size,
                           num_gpus=num_gpus,
                           export_dir=cfg.Retina_LocalModelsServe,

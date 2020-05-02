@@ -77,6 +77,11 @@ class TrainArgsSchema(Schema):
         missing=10,
         description="Number of training epochs")
 
+    epochs_between_evals = fields.Integer(
+        required=False,
+        missing=2,
+        description="Number of training epochs between evaluation runs")
+    
     batch_size = fields.Integer(
         missing=16,
         description='Global Batch size',

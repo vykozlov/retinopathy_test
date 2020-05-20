@@ -32,6 +32,13 @@ from webargs import fields, validate, ValidationError
 from aiohttp.web import HTTPBadRequest
 import json
 import mimetypes 
+
+## DEEPaaS wrapper to get e.g. UploadedFile() object
+from deepaas.model.v2 import wrapper
+
+from functools import wraps
+
+
 ## Authorization
 from flaat import Flaat
 flaat = Flaat()
@@ -40,6 +47,9 @@ flaat = Flaat()
 debug_model = True 
 
 def _catch_error(f):
+    """Decorate function to return an error as HTTPBadRequest, in case
+    """
+    @wraps(f)  
     def wrap(*args, **kwargs):
         try:
             return f(*args, **kwargs)
@@ -75,8 +85,6 @@ def _fields_to_dict(fields_in):
         dict_out[key] = param
     return dict_out
 
-class EmptyObj():
-    pass
 
 def rclone_copy(src_path, dest_path, cmd='copy',):
     '''
@@ -106,29 +114,8 @@ def rclone_copy(src_path, dest_path, cmd='copy',):
     except OSError as e:
         output, error = None, e
     return output, error
-    
-#def get_metadata():
 
-    #module = __name__.split('.', 1)
 
-    #pkg = pkg_resources.get_distribution(module[0])
-    #meta = {
-        #'Name': None,
-        #'Version': None,
-        #'Summary': None,
-        #'Home-page': None,
-        #'Author': None,
-        #'Author-email': None,
-        #'License': None,
-    #}
-
-    #for line in pkg.get_metadata_lines("PKG-INFO"):
-        #for par in meta:
-            #if line.startswith(par+":"):
-                #_, value = line.split(": ", 1)
-                #meta[par] = value
-
-    #return meta
 def get_metadata():
     """
     Function to read metadata
@@ -178,20 +165,6 @@ def get_metadata():
                 
     return meta
 
-
-        
-#def predict(**args):
-
-    #if (not any([args['urls'], args['files']]) or
-            #all([args['urls'], args['files']])):
-        #raise Exception("You must provide either 'url' or 'data' in the payload")
-
-    #if args['files']:
-        #args['files'] = [args['files']]  # patch until list is available
-        #return predict_data(args)
-    #elif args['urls']:
-        #args['urls'] = [args['urls']]  # patch until list is available
-        #return predict_url(args)
         
 def predict(**kwargs):
 
@@ -250,37 +223,6 @@ def predict_data(*args):
     """
     Function to make prediction on an uploaded file
     """
-    #deepaas_ver_cut = parse_version('0.5.0')
-    #imgs = []
-    #filenames = []
-    
-    #deepaas_ver = parse_version(deepaas.__version__)
-    #print("[INFO] deepaas_version: %s" % deepaas_ver)
-    #predict_debug = False
-    #if predict_debug:
-        #print('[DEBUG] predict_data - args: %s' % args)
-        #print('[DEBUG] predict_data - kwargs: %s' % kwargs)
-    #if deepaas_ver >= deepaas_ver_cut:
-        #for arg in args:
-            #imgs.append(arg['files'])
-            #trained_graph = str(yaml.safe_load(arg.trained_graph))
-    #else:
-        #imgs = args[0]
-
-    #if not isinstance(imgs, list):
-        #imgs = [imgs]
-            
-    #for image in imgs:
-        #if deepaas_ver >= deepaas_ver_cut:
-            #f = open("/tmp/%s" % image[0].filename, "w+")
-            #image[0].save(f.name)
-        #else:
-            #f = tempfile.NamedTemporaryFile(delete=False)
-            #f.write(image)
-        #f.close()
-        #filenames.append(f.name)
-        #print("Stored tmp file at: {} \t Size: {}".format(f.name,
-        #os.path.getsize(f.name)))
         
     print("predict_data(*args) - args: %s" % (args)) if debug_model else ''
 
@@ -316,17 +258,6 @@ def predict_data(*args):
 
     return prediction
 
-    #print (img_path)
-    #model_dir = os.path.join(cfg.BASE_DIR, 'models','retinopathy_serve')
-    #model_dir = os.path.join('.','retinopathy_serve')
-    #model_dir+='/'
-    
-    #print(model_dir)
-    #run_prediction.predict_image(model_dir,img_path)
-    
-    #message = 'Not implemented in the model (predict_data hello!)'
-    #return runpred.predict_image(model_dir,img_path)
-
 
 def predict_url(*args):
     """
@@ -355,7 +286,6 @@ def file_size(file_path):
         return convert_bytes(file_info.st_size)
 
 @flaat.login_required() # Require only authorized people to do training
-#def train(train_args):
 def train(**kwargs):
     """
     Train network (transfer learning)
@@ -386,12 +316,10 @@ def train(**kwargs):
     train_args = schema.load(kwargs)
 
     # Take parameters defined via deepaas by a user
-    #train_epochs = yaml.safe_load(train_args.train_epochs)
-    #batch_size = yaml.safe_load(train_args.batch_size)
-    #num_gpus = yaml.safe_load(train_args.num_gpus)
     train_epochs = train_args['train_epochs']
     batch_size = train_args['batch_size']
     num_gpus = train_args['num_gpus']
+    epochs_between_evals = train_args['epochs_between_evals']
     upload_back = train_args['upload_back']
     if debug_model:
         print("train_args:", train_args)
@@ -399,37 +327,30 @@ def train(**kwargs):
         print("Number of GPUs:", train_args['num_gpus'], num_gpus)
 
     # from deep-nextcloud into the container
-    # data_origin = 'rshare:/records_short/'
-    training_data = os.path.join(cfg.Retina_LocalDataRecords, 
-                                 cfg.Retina_TrainingData)
-    validation_data = os.path.join(cfg.Retina_LocalDataRecords, 
-                                   cfg.Retina_ValidationData)
     e1=time.time()
-    # check if retinopathy_tr.tfrecord or retinopathy_va.tfrecord exist locally,
+    # check if retinopathy_tr.tfrecord.XX or retinopathy_va.tfrecord.XX files exist locally,
     # if not -> download them from the RemoteStorage
-    if not (os.path.exists(training_data) or os.path.exists(validation_data)):
+    train_files = 0
+    val_files = 0
+    for f in os.listdir(cfg.Retina_LocalDataRecords):
+        f_path = os.path.join(cfg.Retina_LocalDataRecords, f)
+        if (os.path.isfile(f_path) and cfg.Retina_TrainingData in f):
+            train_files += 1
+        if (os.path.isfile(f_path) and cfg.Retina_ValidationData in f):
+            val_files += 1
+
+    if train_files < 100 or val_files < 20:
         # Retina_RemoteDataRecords and Retina_LocalDataRecords are defined in config.py #vk
-        print("[INFO] Either %s or %s NOT found locally, download them from %s" % 
-              (training_data, validation_data, cfg.Retina_RemoteDataRecords))
+        print("[INFO] Either training or validation files NOT found locally, download them from %s" % 
+              (cfg.Retina_RemoteDataRecords))
         output, error = rclone_copy(cfg.Retina_RemoteDataRecords, cfg.Retina_LocalDataRecords)
         if error:
             message = "[ERROR] training data not copied. rclone returned: " + error
             raise Exception(message)
-            
+
         
     download_time=time.time()-e1
     time.sleep(60)
- 
-    #FLAGS=flags.FLAGS
-    #for name in list(FLAGS):
-    #    print (name)
-
-    #flags.DEFINE_string('listen-ip', '0.0.0.0', 'port')
-    #flags.FLAGS.unparse_flags()
-    #for name in list(FLAGS):
-    #    print (name)
-    #    #if name == 'listen-ip':
-    #        #delattr(flags.FLAGS, name)
 
     e2=time.time()
     ### mimic retinopathy_main.py main()
@@ -444,7 +365,8 @@ def train(**kwargs):
     # define default FLAGS for retinopathy_main and _run_loop
     retimain.define_retinopathy_flags(batch_size=str(batch_size),
                                       train_epochs=str(train_epochs),
-                                      num_gpus=str(num_gpus))
+                                      num_gpus=str(num_gpus),
+                                      epochs_between_evals=str(epochs_between_evals))
 
     # build list of FLAG names and parse them via FLAGS(list)(IMPORTANT!) #vk
     flag_names = []
@@ -457,23 +379,7 @@ def train(**kwargs):
     # call actual training with the set flags
     with logger.benchmark_context(flags.FLAGS):
         graph_zip_path = retimain.run_retinopathy(flags.FLAGS)
-        
-    ### depricated: direct call of the script via subprocess
-    #training_script=os.path.join(cfg.BASE_DIR,
-    #                          'retinopathy_test',
-    #                          'models',
-    #                          'retinopathy_main.py')
-    ## alternative (??) retinopathy_main_short.py
-    #print(training_script)
-    #code = subprocess.call(["python", training_script,
-    #                                  '--batch_size', str(batch_size), 
-    #                                  '--train_epochs', str(train_epochs)])
-    #    
-    ## check_output allows to catch output/printed informaion
-    #graph_zip_path = subprocess.check_output(["python", training_script,
-    #                                        '--batch_size', str(batch_size),
-    #                                        '--train_epochs', str(train_epochs)])
-    ###
+
 
     try:
         graph_zip_path = graph_zip_path.decode()
@@ -487,7 +393,6 @@ def train(**kwargs):
 
     e3=time.time()
     # Retina_LocalModelsServe and Retina_RemoteModelsUpload are defined in config.py #vk
-    # upload_back = yaml.safe_load(train_args.upload_back)
     if(upload_back and os.path.exists(graph_zip_path)):
         graph_zip_dir, graph_zip_name = os.path.split(graph_zip_path)
         print("[INFO] Uploading {} to {} ...".format(graph_zip_name, 
@@ -514,10 +419,24 @@ def train(**kwargs):
         print("[INFO] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 
     upload_time=time.time()-e3
-    training_data_path = os.path.join(cfg.Retina_LocalDataRecords,
-                                      'retinopathy_tr.tfrecords')
-    #message = 'Not implemented in the model (train)'
-    message = 'Training finished! download time: %f, training time: %f, upload time: %f, training file size: %s'%(download_time,training_time,upload_time,file_size(training_data_path))
+    
+    train_files_size = 0
+    val_files_size = 0
+    for f in os.listdir(cfg.Retina_LocalDataRecords):
+        f_path = os.path.join(cfg.Retina_LocalDataRecords, f)
+        if (os.path.isfile(f_path) and cfg.Retina_TrainingData in f):
+            train_files_size += os.stat(f_path).st_size
+        if (os.path.isfile(f_path) and cfg.Retina_ValidationData in f):
+            val_files_size += os.stat(f_path).st_size
+
+    message = {
+              "Message": "Training finished!",
+              "Download time": download_time, 
+              "Training time": training_time,
+              "Upload time": upload_time,
+              "Training set size": convert_bytes(train_files_size), 
+              "Validation set size": convert_bytes(val_files_size)
+    }
     return message
 
 def get_train_args():
@@ -528,34 +447,14 @@ def get_train_args():
     :return:
     """
 
-    #train_args = cfg.train_args
-
-    ## convert default values and possible 'choices' into strings
-    ##for key, val in train_args.items():
-        ##val['default'] = str(val['default']) #yaml.safe_dump(val['default']) #json.dumps(val['default'])
-        ##if 'choices' in val:
-            ##val['choices'] = [str(item) for item in val['choices']]
-
-    #return train_args
     return cfg.TrainArgsSchema().fields
 
 # !!! deepaas>=0.5.0 calls get_test_args() to get args for 'predict'
-#def get_test_args():
 def get_predict_args():
     """
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/wip-api_v2/user/v2-api.html#deepaas.model.v2.base.BaseModel.get_predict_args
     :return:
     """
-    
-    #predict_args = cfg.predict_args
 
-    ## convert default values and possible 'choices' into strings
-    ##for key, val in predict_args.items():
-        ##val['default'] = str(val['default'])  # yaml.safe_dump(val['default']) #json.dumps(val['default'])
-        ##if 'choices' in val:
-            ##val['choices'] = [str(item) for item in val['choices']]
-        ##print(val['default'], type(val['default']))
-
-    #return predict_args
     return cfg.PredictArgsSchema().fields
 

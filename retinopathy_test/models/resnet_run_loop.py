@@ -26,6 +26,7 @@ from __future__ import print_function
 import os
 import json
 import shutil
+import time
 import zipfile
 
 # pylint: disable=g-bad-import-order
@@ -420,6 +421,56 @@ def resnet_main(
     # eval (which is generally unimportant in those circumstances) to terminate.
     # Note that eval will run for max_train_steps each loop, regardless of the
     # global_step count.
+
+    #####
+    # 'work-around' for Onedata. Sometimes checkpoint has zero-size 
+    # until directory is "refreshed" with "ls -la"
+    debug_checkpoint = True
+    max_cycles = 20 # to avoid an infinite loop
+    icyc = 0
+
+    checkpoint_file = os.path.join(flags_obj.model_dir, "checkpoint")
+    checkpoint_now = ""
+    checkpoint_state = ""
+    checkpoint_state_ok = False
+    checkpoint_size = 0
+    checkpoint_size_ok = False
+
+    while icyc < max_cycles and not checkpoint_size_ok:
+        check_size = os.stat(checkpoint_file).st_size
+        # checkpoint_size must be non-zero!
+        if check_size == checkpoint_size and check_size > 50:
+            checkpoint_size_ok = True
+
+        checkpoint_size = check_size
+
+        try:
+            checkpoint_now = tf.train.latest_checkpoint(flags_obj.model_dir)
+            checkpoint_state = tf.train.get_checkpoint_state(flags_obj.model_dir)
+            checkpoint_state_ok = True
+        except ValueError:
+            checkpoint_state_ok = False
+
+        print("[INFO] Last checkpoint {}, state: {} (#{})"
+              .format(checkpoint_now, checkpoint_state_ok, icyc))
+        print("[INFO] Checkpoint file : {}, size: {}".format(checkpoint_file, check_size))
+        if debug_checkpoint and not checkpoint_state_ok:
+            print("checkpoint_state: {}".format(checkpoint_state))
+            print("[DEBUG] Read checkpoint file:")
+            with open(os.path.join(flags_obj.model_dir, "checkpoint"), "r") as f:
+                for line in f:
+                    print(line)
+
+        if icyc >5 and not checkpoint_state_ok:
+            cmd = "ls -la " + flags_obj.model_dir
+            os.system(cmd)
+
+        icyc += 1
+        time.sleep(3)
+    
+    print("") if debug_checkpoint else ''
+    #### end of 'work-around'
+    
     eval_results = classifier.evaluate(input_fn=input_fn_eval,
                                        steps=flags_obj.max_train_steps)
 

@@ -23,8 +23,8 @@ if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
 DATA_DIR = os.path.join(IN_OUT_BASE_DIR, 'data')
 MODELS_DIR = os.path.join(IN_OUT_BASE_DIR, 'models')
 
-Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
-#Retina_RemoteStorage = 'rshare:/retinopathy_test'
+#Retina_RemoteStorage = 'rshare:/deep-oc-apps/retinopathy_test'
+Retina_RemoteStorage = 'rshare:/retinopathy_test'
 Retina_RemotePublic = 'https://nc.deep-hybrid-datacloud.eu/s/yNsYpACAFbFS8Rp/download?path='
 Retina_RemoteDataRecords = os.path.join(Retina_RemoteStorage, 'data', 'records')
 Retina_RemoteModelsUpload = os.path.join(Retina_RemoteStorage, 'models')

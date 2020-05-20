@@ -2,7 +2,7 @@
 Sphinx
 python-dotenv>=0.5.1
 opencv-python
-deepaas>=1.0.1
+deepaas>=1.3.0
 flaat>=0.5.1
 webargs>=5.5.2
 #

@@ -32,10 +32,11 @@ class TestModelMethods(unittest.TestCase):
         Test that get_metadata() returns 
         right values (subset)
         """
-        self.assertEqual(self.meta['Name'].replace('-','').replace('_',''),
-                         'retinopathy_test'.replace('-','').replace('_',''))
-        self.assertEqual(self.meta['Author'], 'HMGU')
-        self.assertEqual(self.meta['Author-email'], 'itokeiic@gmail.com')
+                       
+        self.assertEqual(self.meta['name'].lower().replace('-','_'),
+                         'retinopathy_test'.lower().replace('-','_'))
+        self.assertEqual(self.meta['author'], 'HMGU')
+        self.assertEqual(self.meta['author-email'], 'itokeiic@gmail.com')
 
 
 if __name__ == '__main__':

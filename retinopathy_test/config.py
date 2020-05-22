@@ -34,11 +34,12 @@ Retina_LocalModelsServe = os.path.join(Retina_LocalModels, 'retinopathy_serve')
 Retina_TrainingData = "retinopathy_tr.tfrecords."    # "retinopathy_tr.tfrecords"
 Retina_ValidationData = "retinopathy_va.tfrecords."  # "retinopathy_va.tfrecords"
 
-def gpus_must_exist(val):
-    if val > 0:
-        if not tf.test.is_gpu_available():
-            raise ValidationError("GPUs does not exist.")
-
+### it should work on CPU (if num_gpus=0) but very..very slow
+#def gpus_must_exist(val):
+#    if val > 0:
+#        if not tf.test.is_gpu_available():
+#            raise ValidationError("GPUs does not exist.")
+#
                 
 class PredictArgsSchema(Schema):
     class Meta:
@@ -89,7 +90,7 @@ class TrainArgsSchema(Schema):
 
     num_gpus =  fields.Integer(
         missing=1,
-        validate=gpus_must_exist,
+        #validate=gpus_must_exist,
         description='Number of GPUs to use, if available (0 = CPU)',
         required=False)
     

@@ -80,7 +80,7 @@ class TrainArgsSchema(Schema):
 
     epochs_between_evals = fields.Integer(
         required=False,
-        missing=2,
+        missing=1,
         description="Number of training epochs between evaluation runs")
     
     batch_size = fields.Integer(

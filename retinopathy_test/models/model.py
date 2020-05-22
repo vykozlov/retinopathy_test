@@ -6,25 +6,23 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import yaml
-import pkg_resources
-# import project config.py
-import retinopathy_test.config as cfg
-import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
-import os
-import shutil
-import tempfile
-import zipfile
-import retinopathy_test.models.retinopathy_main as retimain
-# import retinopathy_test.models.models-master.official as official
 import absl
 from absl import flags
 from absl import app as absl_app
+import os
+import pkg_resources
+# import project config.py
+import retinopathy_test.config as cfg
+import retinopathy_test.models.retinopathy_main as retimain
+# import retinopathy_test.models.models-master.official as official
+import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
+import shutil
+import zipfile
+
 from official.utils.logs import logger
 
 import tensorflow as tf
 #from official.utils.flags import core as flags_core
-import deepaas
 from pkg_resources import parse_version
 import subprocess
 import time
@@ -36,8 +34,8 @@ import mimetypes
 ## DEEPaaS wrapper to get e.g. UploadedFile() object
 from deepaas.model.v2 import wrapper
 
+from collections import OrderedDict
 from functools import wraps
-
 
 ## Authorization
 from flaat import Flaat
@@ -452,8 +450,13 @@ def get_train_args():
     :param kwargs:
     :return:
     """
+    d_train = cfg.TrainArgsSchema().fields
 
-    return cfg.TrainArgsSchema().fields
+    # dictionary sorted by key, 
+    # https://docs.python.org/3.6/library/collections.html#ordereddict-examples-and-recipes
+    train_args = OrderedDict(sorted(d_train.items(), key=lambda t: t[0]))
+
+    return train_args
 
 # !!! deepaas>=0.5.0 calls get_test_args() to get args for 'predict'
 def get_predict_args():
@@ -461,6 +464,10 @@ def get_predict_args():
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/wip-api_v2/user/v2-api.html#deepaas.model.v2.base.BaseModel.get_predict_args
     :return:
     """
+    d_predict = cfg.PredictArgsSchema().fields
+    # dictionary sorted by key, 
+    # https://docs.python.org/3.6/library/collections.html#ordereddict-examples-and-recipes
+    predict_args = OrderedDict(sorted(d_predict.items(), key=lambda t: t[0]))
 
-    return cfg.PredictArgsSchema().fields
+    return predict_args
 

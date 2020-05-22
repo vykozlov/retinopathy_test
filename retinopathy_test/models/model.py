@@ -227,11 +227,13 @@ def predict_data(*args):
     print("predict_data(*args) - args: %s" % (args)) if debug_model else ''
 
     files = []
+    files_original = []
 
     for arg in args:
         file_objs = arg['files']
         for f in file_objs:
             files.append(f.filename)
+            files_original.append(f.original_filename)
             if debug_model:
                 print("file_obj: name: {}, filename: {}, content_type: {}".format(
                                                                f.name,
@@ -242,21 +244,25 @@ def predict_data(*args):
                                                   os.path.getsize(f.filename)))
         trained_graph = arg['trained_graph']
 
-    prediction = []
+    results = []
     try:
-        #for imgfile in filenames:
-        for imgfile in files:    
-            prediction.append(str(predict_file(imgfile, trained_graph)))
-            #prediction.append(predict_file(imgfile, trained_graph))
-            print("image: ", imgfile)
+        idx = 0
+        for imgfile in files:
+            imgfile_original = files_original[idx]
+            pred = {
+                "original_filename": imgfile_original,
+                "prediction" : str(predict_file(imgfile, trained_graph))
+            }
+            idx+=1
+            results.append(pred)
+            print("image: {} (tmp: {})".format(imgfile_original, imgfile))
     except Exception as e:
         raise e
     finally:
-        #for imgfile in filenames:
         for imgfile in files:
             os.remove(imgfile)
 
-    return prediction
+    return results
 
 
 def predict_url(*args):

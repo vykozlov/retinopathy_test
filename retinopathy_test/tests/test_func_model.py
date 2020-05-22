@@ -35,7 +35,9 @@ class TestModelFunc(unittest.TestCase):
         test_class = 4
         prob_cut = 0.5
 
-        prob = self.pred_result[self.test_img_path]['probabilities'][0][test_class]
+        # we changed what run_prediction.predict_image() returns
+        #prob = self.pred_result[self.test_img_path]['probabilities'][0][test_class]
+        prob = self.pred_result['probabilities'][0][test_class]
     
         assert prob > prob_cut
         

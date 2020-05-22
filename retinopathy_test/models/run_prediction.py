@@ -38,8 +38,8 @@ def predict_image(model_dir, image_file): #ki: this is the main function perform
         img = load_image(imgfile, 256)
         output = predictor_fn({'input': img})
         print(imgfile, output)
-        results['%s'%imgfile]=output
-    return results
+        #results['%s'%imgfile]=output #imgfile is temporary file stored with unrelated name.
+    return output
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser() #ki: create command line parser to get model parameters and image files.

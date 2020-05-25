@@ -16,7 +16,9 @@ import retinopathy_test.config as cfg
 import retinopathy_test.models.retinopathy_main as retimain
 # import retinopathy_test.models.models-master.official as official
 import retinopathy_test.models.run_prediction as runpred #ki: comment out to avoid tensorflow import
+from six.moves import urllib
 import shutil
+import sys
 import zipfile
 
 from official.utils.logs import logger
@@ -42,7 +44,7 @@ from flaat import Flaat
 flaat = Flaat()
 
 # Switch for debugging in this script
-debug_model = True 
+debug_model = False
 
 def _catch_error(f):
     """Decorate function to return an error as HTTPBadRequest, in case
@@ -83,6 +85,36 @@ def _fields_to_dict(fields_in):
         dict_out[key] = param
     return dict_out
 
+def url_download(url_path, local_dir, data_file):
+    """ Function to copy a file from URL
+    :param url_path: remote URL to download
+    :param local_dir: local directory path for storing the file
+    :param data_file: file name into which save the remote file
+    :return: if file is downloaded (=local version exists), possible error
+    """
+
+    file_path = os.path.join(local_dir, data_file)
+
+    def _progress(count, block_size, total_size):
+        sys.stdout.write('\r>> Downloading %s %.1f' % (data_file,
+                        float(count * block_size)))
+        sys.stdout.flush()
+
+    file_path, _ = urllib.request.urlretrieve(url_path, file_path, _progress)
+    statinfo = os.stat(file_path)
+
+    if os.path.exists(file_path):
+        print('[INFO] Successfully downloaded %s, %d bytes' % 
+               (data_file, statinfo.st_size))
+        dest_exist = True
+        error_out = None
+    else:
+        dest_exist = False
+        error_out = '[ERROR, url_download()] Failed to download ' + data_file + \
+                    ' from ' + url_path
+
+    return dest_exist, error_out
+
 
 def rclone_copy(src_path, dest_path, cmd='copy',):
     '''
@@ -110,7 +142,13 @@ def rclone_copy(src_path, dest_path, cmd='copy',):
         result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = result.communicate()
     except OSError as e:
-        output, error = None, e
+        if cmd == 'copyurl':
+            print("[DEBUG] Here we call url_download()") if debug_model else ''
+            dest_dir, dest_file = os.path.split(dest_path)
+            output, error = url_download(remote_link, dest_dir, dest_file)
+        else:
+            output, error = None, e
+
     return output, error
 
 
@@ -160,10 +198,10 @@ def get_metadata():
             if line_low.startswith(par.lower() + ":"):
                 _, value = line.split(": ", 1)
                 meta[par] = value
-                
+
     return meta
 
-        
+
 def predict(**kwargs):
 
     print("predict(**kwargs) - kwargs: %s" % (kwargs)) if debug_model else ''
@@ -179,7 +217,7 @@ def predict(**kwargs):
         kwargs['urls'] = [kwargs['urls']]  # patch until list is available
         return predict_url(kwargs)
 
-    
+
 def predict_file(img_path, trained_graph):
     """
     Function to make prediction on a local file
@@ -187,7 +225,7 @@ def predict_file(img_path, trained_graph):
     print ('[DEBUG] image_path: ', img_path)
     model_dir = os.path.join(cfg.Retina_LocalModelsServe, trained_graph)
     print ('[DEBUG] model_dir: ', model_dir)
-    
+
     trained_graph_file = trained_graph + ".zip"
     store_zip_path = os.path.join(cfg.Retina_LocalModelsServe, trained_graph_file)
 
@@ -197,9 +235,11 @@ def predict_file(img_path, trained_graph):
         output, error = rclone_copy(src_path=remote_src_path,
                                     dest_path=store_zip_path,
                                     cmd='copyurl')
+        print("[OUTPUT, ERROR] store_zip_path: %s, %s" % (output, error))
         if error:
             message = "[ERROR] graph was not properly copied. rclone returned: "
             message = message + error
+            print("[ERROR] store_zip_path: %s", message)
             raise Exception(message)
 
         # if .zip is present locally, de-archive it
@@ -221,7 +261,7 @@ def predict_data(*args):
     """
     Function to make prediction on an uploaded file
     """
-        
+
     print("predict_data(*args) - args: %s" % (args)) if debug_model else ''
 
     files = []
@@ -266,7 +306,7 @@ def predict_data(*args):
 def predict_url(*args):
     """
     Function to make prediction on a URL
-    """    
+    """
     message = 'Not implemented in the model (predict_url)'
     message = {"Error": message}
     return message
@@ -352,7 +392,6 @@ def train(**kwargs):
             message = "[ERROR] training data not copied. rclone returned: " + error
             raise Exception(message)
 
-        
     download_time=time.time()-e1
     time.sleep(60)
 
@@ -423,7 +462,7 @@ def train(**kwargs):
         print("[INFO] Created zip file of the graph, %s, was NOT uploaded!" % graph_zip_path)
 
     upload_time=time.time()-e3
-    
+
     train_files_size = 0
     val_files_size = 0
     for f in os.listdir(cfg.Retina_LocalDataRecords):

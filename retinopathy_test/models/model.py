@@ -93,6 +93,9 @@ def url_download(url_path, local_dir, data_file):
     :return: if file is downloaded (=local version exists), possible error
     """
 
+    if not os.path.exists(local_dir):
+        os.makedirs(local_dir, exist_ok=True)
+
     file_path = os.path.join(local_dir, data_file)
 
     def _progress(count, block_size, total_size):
